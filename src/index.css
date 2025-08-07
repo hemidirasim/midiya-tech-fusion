@@ -39,20 +39,21 @@ All colors MUST be HSL.
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Brand & Effects */
+    --brand: 258 85% 60%; /* Violet */
+    --brand-2: 200 95% 48%; /* Cyan */
+    --brand-muted: 258 85% 96%;
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--brand) / 0.25);
+    --shadow-glow: 0 0 40px hsl(var(--brand-2) / 0.35);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
@@ -91,15 +92,26 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Brand in dark */
+    --brand: 258 88% 66%;
+    --brand-2: 190 95% 55%;
+    --brand-muted: 258 30% 16%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground font-sans; }
+}
 
-  body {
-    @apply bg-background text-foreground;
+@layer utilities {
+  .story-link { @apply relative inline-block; }
+  .story-link::after {
+    content: "";
+    @apply absolute w-full scale-x-0 h-0.5 bottom-0 left-0 bg-primary origin-bottom-right transition-transform duration-300;
   }
+  .story-link:hover::after { @apply scale-x-100 origin-bottom-left; }
+  .hover-scale { @apply transition-transform duration-200 hover:scale-105; }
+  .pulse { @apply animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]; }
 }

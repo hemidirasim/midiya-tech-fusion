@@ -11,7 +11,7 @@ const FAQ = () => {
           <h2 className="font-display text-3xl md:text-4xl font-semibold">{t("faq.header")}</h2>
           <p className="mt-3 text-muted-foreground">{t("faq.sub")}</p>
         </header>
-        <Accordion type="single" collapsible className="w-full max-w-3xl">
+        <Accordion type="single" collapsible className="w-full">
           {faqs.map((f, i) => (
             <AccordionItem key={i} value={`item-${i}`}>
               <AccordionTrigger>{f.q}</AccordionTrigger>

@@ -2,6 +2,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Hero from "@/components/sections/Hero";
 import Services from "@/components/sections/Services";
+import Clients from "@/components/sections/Clients";
 import CTA from "@/components/sections/CTA";
 import FAQ from "@/components/sections/FAQ";
 import { Shield, Wrench, Users2, Zap } from "lucide-react";
@@ -78,6 +79,7 @@ const Index = () => {
       <main>
         <Hero />
         <Services />
+        <Clients />
         <Why />
         <CTA />
         <FAQ />

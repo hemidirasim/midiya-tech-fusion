@@ -5,6 +5,7 @@ import Services from "@/components/sections/Services";
 import Clients from "@/components/sections/Clients";
 import CTA from "@/components/sections/CTA";
 import FAQ from "@/components/sections/FAQ";
+import SEOHead from "@/components/SEOHead";
 import { Shield, Wrench, Users2, Zap } from "lucide-react";
 import { useI18n } from "@/i18n/i18n";
 
@@ -43,19 +44,86 @@ const Why = () => {
 const StructuredData = () => {
   const { t, lang } = useI18n();
   const serviceTitles = (t("services.items") as { title: string }[]).map((s) => s.title);
-  const jsonLd = {
+  
+  // Enhanced organization schema
+  const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": "Service",
-    name: lang === "en" ? "Midiya Technology Solutions" : "Midiya Texnoloji Həllər",
-    provider: {
-      "@type": "Organization",
-      name: "Midiya",
-      url: "https://midiya.az",
+    "@type": "Organization",
+    name: "Midiya",
+    url: "https://midiya.az",
+    logo: "https://midiya.az/midiya-logo-white.png",
+    description: lang === "en" 
+      ? "Professional IT services company in Azerbaijan specializing in website development, mobile applications, ERP systems, and AI solutions."
+      : "Azərbaycanda sayt sifarişi, mobil tətbiq hazırlanması, ERP proqramları və AI həlləri ilə məşğul olan peşəkar IT şirkəti.",
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "AZ",
+      addressLocality: "Baku"
     },
-    areaServed: "AZ",
-    serviceType: serviceTitles,
+    contactPoint: {
+      "@type": "ContactPoint",
+      email: "info@midiya.az",
+      contactType: "customer service"
+    },
+    sameAs: [
+      "https://midiya.az"
+    ]
   };
-  const faq = {
+
+  // Enhanced service schema with specific IT services
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": "https://midiya.az",
+    name: "Midiya",
+    url: "https://midiya.az",
+    description: lang === "en" 
+      ? "Leading IT services provider in Azerbaijan offering website development, mobile app creation, ERP software, warehouse management systems, and AI solutions."
+      : "Azərbaycanda aparıcı IT xidməti təminatçısı - sayt sifarişi, saytların yazılması, mobil tətbiq hazırlanması, ERP proqramı, anbar proqramı və AI həlləri.",
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "AZ",
+      addressLocality: "Baku"
+    },
+    telephone: "+994",
+    email: "info@midiya.az",
+    priceRange: "$$$",
+    serviceArea: {
+      "@type": "Country",
+      name: "Azerbaijan"
+    },
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: lang === "en" ? "IT Services" : "IT Xidmətləri",
+      itemListElement: serviceTitles.map((title, index) => ({
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: title,
+          description: title
+        }
+      }))
+    }
+  };
+
+  // Software development specific schema
+  const softwareSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: lang === "en" ? "Custom Software Development Services" : "Xüsusi Proqram Təminatı Xidmətləri",
+    description: lang === "en"
+      ? "We develop custom websites, mobile applications, ERP systems, warehouse management software, and AI-powered solutions."
+      : "Biz xüsusi saytlar, mobil tətbiqlər, ERP sistemləri, anbar idarəetmə proqramları və AI əsaslı həllər hazırlayırıq.",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: ["Web", "iOS", "Android", "Windows", "macOS"],
+    offers: {
+      "@type": "Offer",
+      price: "Contact for quote",
+      priceCurrency: "USD"
+    }
+  };
+
+  const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: (t("faq.items") as { q: string; a: string }[]).map((f) => ({
@@ -64,10 +132,34 @@ const StructuredData = () => {
       acceptedAnswer: { "@type": "Answer", text: f.a },
     })),
   };
+
+  // Breadcrumb schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: lang === "en" ? "Home" : "Ana səhifə",
+        item: "https://midiya.az"
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: lang === "en" ? "Services" : "Xidmətlər",
+        item: "https://midiya.az#xidmetler"
+      }
+    ]
+  };
+
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
     </>
   );
 };
@@ -75,6 +167,7 @@ const StructuredData = () => {
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead />
       <Navbar />
       <main>
         <Hero />

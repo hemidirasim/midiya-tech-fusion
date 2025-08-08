@@ -411,6 +411,12 @@ const I18nContext = createContext<I18nContextType | null>(null);
 
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [lang, setLangState] = useState<Lang>(() => {
+    // Check URL parameter first, then localStorage, then default to "en"
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLang = urlParams.get("lang") as Lang | null;
+    if (urlLang && (urlLang === "en" || urlLang === "az")) {
+      return urlLang;
+    }
     const saved = localStorage.getItem("lang") as Lang | null;
     return saved ?? "en";
   });
@@ -419,6 +425,11 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLangState(l);
     localStorage.setItem("lang", l);
     document.documentElement.lang = l;
+    
+    // Update URL parameter
+    const url = new URL(window.location.href);
+    url.searchParams.set("lang", l);
+    window.history.pushState({}, "", url.toString());
   };
 
   useEffect(() => {

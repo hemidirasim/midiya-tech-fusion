@@ -12,8 +12,14 @@ import { toast } from "@/hooks/use-toast";
 
 const CTA = () => {
   const { t, lang } = useI18n();
-  const services = (t("services.items") as { title: string }[]).map((s) => s.title);
-  const budgets = (t("quoteForm.budgets") as string[]) || [];
+  const rawServices = t("services.items");
+  const services = Array.isArray(rawServices) ? (rawServices as { title: string }[]).map((s) => s.title) : [];
+  const rawBudgets = t("quoteForm.budgets");
+  const budgets = Array.isArray(rawBudgets)
+    ? (rawBudgets as string[])
+    : (lang === "az"
+        ? ["< 1,000 ₼", "1,000–5,000 ₼", "5,000–15,000 ₼", "15,000–50,000 ₼", "50,000+ ₼"]
+        : ["< $1,000", "$1,000–$5,000", "$5,000–$15,000", "$15,000–$50,000", "$50,000+"]);
 
   const schema = z.object({
     name: z.string().min(2),

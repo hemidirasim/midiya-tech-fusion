@@ -400,8 +400,11 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const parts = path.split(".");
       let cur: any = dict;
       for (const p of parts) {
-        if (cur && typeof cur === "object" && p in cur) cur = cur[p];
-        else return path;
+        if (cur && typeof cur === "object" && p in cur) {
+          cur = cur[p];
+        } else {
+          return undefined;
+        }
       }
       return cur;
     };

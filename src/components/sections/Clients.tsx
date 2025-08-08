@@ -2,7 +2,8 @@ import { useI18n } from "@/i18n/i18n";
 
 const Clients = () => {
   const { t } = useI18n();
-  const items = (t("clients.items") as { name: string; logo?: string }[]) || [];
+  const raw = t("clients.items");
+  const items = Array.isArray(raw) ? (raw as { name: string; logo?: string }[]) : [];
 
   return (
     <section id="clients" className="py-16 md:py-24">

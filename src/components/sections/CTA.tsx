@@ -84,7 +84,7 @@ const CTA = () => {
             </div>
             <div className="bg-card rounded-lg border p-5 md:p-6">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" action=""  method="post">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <FormField
                     control={form.control}
                     name="name"

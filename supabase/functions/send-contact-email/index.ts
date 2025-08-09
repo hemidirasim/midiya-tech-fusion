@@ -30,7 +30,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Received contact form submission:", { name, email, phone, services, budget });
 
     const emailResponse = await resend.emails.send({
-      from: "Midiya <onboarding@resend.dev>",
+      from: "Midiya <noreply@midiya.az>",
       to: ["support@midiya.az"],
       subject: "Yeni təklif sorğusu - Midiya",
       html: `

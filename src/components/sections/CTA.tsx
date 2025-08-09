@@ -76,10 +76,7 @@ const CTA = () => {
             <div>
               <h3 className="font-display text-2xl md:text-3xl font-semibold">{t("cta.title")}</h3>
               <p className="mt-3 text-muted-foreground max-w-2xl">{t("cta.desc")}</p>
-              <div className="mt-6 flex flex-wrap gap-4">
-                <Button asChild variant="hero" size="lg">
-                  <a href="mailto:info@midiya.az?subject=Midiya%20Inquiry">{t("cta.primary")}</a>
-                </Button>
+               <div className="mt-6 flex flex-wrap gap-4">
                 <Button asChild variant="outline" size="lg">
                   <a href="#xidmetler">{t("cta.secondary")}</a>
                 </Button>
@@ -189,8 +186,15 @@ const CTA = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" size="lg">
-                    {t("quoteForm.submit")}
+                  <Button type="submit" className="w-full" size="lg" disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                        Göndərilir...
+                      </div>
+                    ) : (
+                      t("quoteForm.submit")
+                    )}
                   </Button>
                 </form>
               </Form>

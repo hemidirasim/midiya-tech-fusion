@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const CTA = () => {
   const { t, lang } = useI18n();
@@ -35,23 +36,27 @@ const CTA = () => {
     defaultValues: { name: "", email: "", phone: "", services: [], budget: "", message: "" },
   });
 
-  const onSubmit = (values: z.infer<typeof schema>) => {
+  const onSubmit = async (values: z.infer<typeof schema>) => {
     try {
-      const subject = t("quoteForm.subject");
-      const body = [
-        `Name: ${values.name}`,
-        `Email: ${values.email}`,
-        `Phone: ${values.phone}`,
-        `Services: ${values.services.join(", ")}`,
-        `Budget: ${values.budget}`,
-        "",
-        values.message,
-      ].join("\n");
-      const mailto = `mailto:info@midiya.az?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.location.href = mailto;
+      const { error } = await supabase.functions.invoke('send-contact-email', {
+        body: {
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+          services: values.services,
+          budget: values.budget,
+          message: values.message,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
       toast({ title: t("quoteForm.successTitle"), description: t("quoteForm.successDesc") });
       form.reset();
     } catch (e) {
+      console.error('Form submission error:', e);
       toast({ title: t("quoteForm.errorTitle"), description: t("quoteForm.errorDesc") });
     }
   };

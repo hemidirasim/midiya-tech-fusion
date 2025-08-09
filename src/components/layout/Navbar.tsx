@@ -20,7 +20,7 @@ const Navbar = () => {
             <Button variant={lang === "en" ? "secondary" : "outline"} size="sm" onClick={() => setLang("en")}>EN</Button>
             <Button variant={lang === "az" ? "secondary" : "outline"} size="sm" onClick={() => setLang("az")}>AZ</Button>
           </div>
-          <Button asChild variant="hero">
+          <Button asChild variant="hero"> 
             <a href="#elaqe">{t("nav.quote")}</a>
           </Button>
         </div>

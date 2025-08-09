@@ -35,31 +35,22 @@ const CTA = () => {
     defaultValues: { name: "", email: "", phone: "", services: [], budget: "", message: "" },
   });
 
-  const onSubmit = async (values: z.infer<typeof schema>) => {
+  const onSubmit = (values: z.infer<typeof schema>) => {
     try {
-      // FormSubmit.co istifadə edərək birbaşa e-mail göndərmə
-      const formData = new FormData();
-      formData.append('name', values.name);
-      formData.append('email', values.email);
-      formData.append('phone', values.phone);
-      formData.append('services', values.services.join(', '));
-      formData.append('budget', values.budget);
-      formData.append('message', values.message);
-      formData.append('_subject', t("quoteForm.subject"));
-      formData.append('_next', window.location.href);
-      formData.append('_captcha', 'false');
-
-      const response = await fetch('https://formsubmit.co/support@midiya.az', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (response.ok) {
-        toast({ title: t("quoteForm.successTitle"), description: t("quoteForm.successDesc") });
-        form.reset();
-      } else {
-        throw new Error('Form submission failed');
-      }
+      const subject = t("quoteForm.subject");
+      const body = [
+        `Name: ${values.name}`,
+        `Email: ${values.email}`,
+        `Phone: ${values.phone}`,
+        `Services: ${values.services.join(", ")}`,
+        `Budget: ${values.budget}`,
+        "",
+        values.message,
+      ].join("\n");
+      const mailto = `mailto:info@midiya.az?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.location.href = mailto;
+      toast({ title: t("quoteForm.successTitle"), description: t("quoteForm.successDesc") });
+      form.reset();
     } catch (e) {
       toast({ title: t("quoteForm.errorTitle"), description: t("quoteForm.errorDesc") });
     }
@@ -75,7 +66,7 @@ const CTA = () => {
               <p className="mt-3 text-muted-foreground max-w-2xl">{t("cta.desc")}</p>
               <div className="mt-6 flex flex-wrap gap-4">
                 <Button asChild variant="hero" size="lg">
-                  <a href="mailto:support@midiya.az?subject=Midiya%20Inquiry">{t("cta.primary")}</a>
+                  <a href="mailto:info@midiya.az?subject=Midiya%20Inquiry">{t("cta.primary")}</a>
                 </Button>
                 <Button asChild variant="outline" size="lg">
                   <a href="#xidmetler">{t("cta.secondary")}</a>

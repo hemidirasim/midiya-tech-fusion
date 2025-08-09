@@ -27,29 +27,13 @@ const Hero = () => {
     return () => el.removeEventListener("mousemove", onMove);
   }, []);
   const pillars = t("hero.pillars") as string[];
-  return <section ref={ref} className="relative overflow-hidden">
+  return <section ref={ref} className="relative overflow-hidden h-screen">
       <div aria-hidden className="absolute inset-0 -z-10" style={{
-      background: `
-            radial-gradient(700px circle at ${pos.x}% ${pos.y}%, hsl(var(--brand-2)/0.28), transparent 60%),
-            conic-gradient(from 180deg at 50% 10%, hsl(var(--brand)/0.12), transparent 30%),
-            linear-gradient(to bottom, hsl(var(--brand)/0.10), transparent)
-          `
+      background: `linear-gradient(135deg, #8b5cf6, #06b6d4)`
     }} />
-      <div aria-hidden className="absolute inset-0 -z-10 opacity-[0.07]" style={{
-      backgroundImage: "radial-gradient(circle at 1px 1px, hsl(var(--foreground)/0.15) 1px, transparent 0)",
-      backgroundSize: "24px 24px"
-    }} />
-      <div aria-hidden className="absolute inset-0 -z-10 pointer-events-none">
-        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl opacity-40" style={{
-        background: "radial-gradient(closest-side, hsl(var(--brand)/0.6), transparent)"
-      }} />
-        <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full blur-3xl opacity-40" style={{
-        background: "radial-gradient(closest-side, hsl(var(--brand-2)/0.6), transparent)"
-      }} />
-      </div>
-      <div className="container mx-auto pt-16 md:pt-24 pb-16 md:pb-24 text-center">
+      <div className="container mx-auto flex flex-col items-center justify-center text-center h-full">
         <div className="flex justify-center mb-6">
-          <img src={logo} alt={t("hero.logoAlt")} className="h-10 w-auto" />
+
         </div>
         <h1 className="font-display text-4xl md:text-6xl font-semibold tracking-tight leading-tight animate-enter bg-gradient-to-r from-[hsl(var(--brand))] to-[hsl(var(--brand-2))] bg-clip-text text-transparent">
           {t("hero.title")}
@@ -67,7 +51,6 @@ const Hero = () => {
           {pillars.map(p => <div key={p} className="hover-scale">{p}</div>)}
         </div>
       </div>
-      <div className="pointer-events-none absolute inset-0 -z-20 bg-gradient-to-b from-[hsl(var(--brand)/0.08)] via-transparent to-transparent" />
     </section>;
 };
 export default Hero;

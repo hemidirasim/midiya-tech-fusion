@@ -22,9 +22,9 @@ const translations: Record<Lang, Dict> = {
       homeAria: "Midiya homepage",
     },
     hero: {
-      title: "Midiya — Software, Hardware & AI Technology Solutions",
+      title: "Advanced Technology, Personalized Solutions, Fast Results",
       desc:
-        "From design to production: web and mobile apps, ERP/CRM, industrial & IoT, cloud, cybersecurity, and AI‑powered intelligent systems.",
+        "From concept to deployment: web and mobile applications, enterprise ERP/CRM systems, IoT solutions, cloud infrastructure, cybersecurity, and AI-powered intelligent systems.",
       ctaPrimary: "Get a quote",
       ctaSecondary: "View services",
       pillars: [
@@ -175,15 +175,21 @@ const translations: Record<Lang, Dict> = {
       ],
     },
     clients: {
-      header: "Our clients",
+      header: "Some of the companies that trust us",
       sub: "Trusted by teams and brands.",
       items: [
-        { name: "AzTV", logo: "logos//aztv.png" },
+        { name: "Azərbaycan Televiziyası", logo: "logos//aztv.png" },
         { name: "HayatClinic", logo: "logos/hayat_clinic.png" },
         { name: "Arb24", logo: "logos/arb_24.png" },
         { name: "Merinos Home", logo: "logos/merinos_home.svg" },
         { name: "Turan Bank", logo: "logos/turan_bank.png" },
         { name: "Operativ Media", logo: "logos/operativ_media.svg" },
+        { name: "Azərbaycan Respublikası Mədəniyyət Nazirliyi", logo: "logos/medeniyyet_nazirliyi.png" },
+        { name: "Regional İnkişaf İctimai Birliyi", logo: "logos/riib.png" },
+        { name: "Rahat Market", logo: "logos/rahat_market.png" },
+        { name: "Azərbaycan Respublikası Elm və Təhsil Nazirliyi", logo: "logos/elm-tehsil-naziriyi-logo.png" },
+        { name: "Byart Construction", logo: "logos/byart_logo.png" },
+        { name: "Salyan Pivə Zavodu", logo: "logos/salyan_pive_zavodu.png" },
       ],
     },
     quoteForm: {
@@ -219,7 +225,7 @@ const translations: Record<Lang, Dict> = {
       homeAria: "Midiya ana səhifə",
     },
     hero: {
-      title: "Midiya — Software, Hardware və AI Texnoloji Həllər",
+      title: "Müasir texnologiyalar, fərdiləşdirilmiş yanaşma, sürətli nəticə",
       desc:
         "Layihələndirmədən istehsala qədər: veb və mobil tətbiqlər, ERP/CRM, sənaye və IoT, bulud, kibertəhlükəsizlik və AI əsaslı ağıllı sistemlər.",
       ctaPrimary: "Təklif al",
@@ -372,15 +378,21 @@ const translations: Record<Lang, Dict> = {
       ],
     },
     clients: {
-      header: "Müştərilərimiz",
+      header: "Bizə etibar edən şirkətlərin bir qismi",
       sub: "Komandalar və brendlərin etibarı.",
       items: [
-        { name: "AzTV", logo: "logos//aztv.png" },
+        { name: "Azərbaycan Televiziyası", logo: "logos//aztv.png" },
         { name: "HayatClinic", logo: "logos/hayat_clinic.png" },
         { name: "Arb24", logo: "logos/arb_24.png" },
         { name: "Merinos Home", logo: "logos/merinos_home.svg" },
         { name: "Turan Bank", logo: "logos/turan_bank.png" },
         { name: "Operativ Media", logo: "logos/operativ_media.svg" },
+        { name: "Azərbaycan Respublikası Mədəniyyət Nazirliyi", logo: "logos/medeniyyet_nazirliyi.png" },
+        { name: "Regional İnkişaf İctimai Birliyi", logo: "logos/riib.png" },
+        { name: "Rahat Market", logo: "logos/rahat_market.png" },
+        { name: "Azərbaycan Respublikası Elm və Təhsil Nazirliyi", logo: "logos/elm-tehsil-naziriyi-logo.png" },
+        { name: "Byart Construction", logo: "logos/byart_logo.png" },
+        { name: "Salyan Pivə Zavodu", logo: "logos/salyan_pive_zavodu.png" },
       ],
     },
     quoteForm: {

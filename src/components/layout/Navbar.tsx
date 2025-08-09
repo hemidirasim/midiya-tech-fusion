@@ -1,4 +1,4 @@
-import logo from "@/assets/midiya-logo-white.png";
+import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/i18n";
 
@@ -20,9 +20,6 @@ const Navbar = () => {
             <Button variant={lang === "en" ? "secondary" : "outline"} size="sm" onClick={() => setLang("en")}>EN</Button>
             <Button variant={lang === "az" ? "secondary" : "outline"} size="sm" onClick={() => setLang("az")}>AZ</Button>
           </div>
-          <Button asChild variant="outline">
-            <a href="#xidmetler">{t("nav.explore")}</a>
-          </Button>
           <Button asChild variant="hero">
             <a href="#elaqe">{t("nav.quote")}</a>
           </Button>

@@ -47,7 +47,7 @@ const CTA = () => {
         "",
         values.message,
       ].join("\n");
-      const mailto = `mailto:info@midiya.az?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      const mailto = `mailto:support@midiya.az?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.location.href = mailto;
       toast({ title: t("quoteForm.successTitle"), description: t("quoteForm.successDesc") });
       form.reset();
@@ -66,7 +66,7 @@ const CTA = () => {
               <p className="mt-3 text-muted-foreground max-w-2xl">{t("cta.desc")}</p>
               <div className="mt-6 flex flex-wrap gap-4">
                 <Button asChild variant="hero" size="lg">
-                  <a href="mailto:info@midiya.az?subject=Midiya%20Inquiry">{t("cta.primary")}</a>
+                  <a href="mailto:support@midiya.az?subject=Midiya%20Inquiry">{t("cta.primary")}</a>
                 </Button>
                 <Button asChild variant="outline" size="lg">
                   <a href="#xidmetler">{t("cta.secondary")}</a>

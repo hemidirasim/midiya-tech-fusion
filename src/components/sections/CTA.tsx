@@ -38,7 +38,7 @@ const CTA = () => {
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
     try {
-      const { error } = await supabase.functions.invoke('send-contact-email', {
+      const { data, error } = await supabase.functions.invoke('send-contact-email', {
         body: {
           name: values.name,
           email: values.email,
@@ -50,14 +50,21 @@ const CTA = () => {
       });
 
       if (error) {
-        throw error;
+        throw new Error(error.message);
       }
 
-      toast({ title: t("quoteForm.successTitle"), description: t("quoteForm.successDesc") });
+      toast({ 
+        title: t("quoteForm.successTitle"), 
+        description: t("quoteForm.successDesc") 
+      });
       form.reset();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Form submission error:', e);
-      toast({ title: t("quoteForm.errorTitle"), description: t("quoteForm.errorDesc") });
+      toast({ 
+        title: t("quoteForm.errorTitle"), 
+        description: e.message || t("quoteForm.errorDesc"),
+        variant: "destructive"
+      });
     }
   };
 

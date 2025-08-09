@@ -12,6 +12,7 @@ const Navbar = () => {
         </a>
         <div className="hidden md:flex items-center gap-8 text-sm">
           <a href="#xidmetler" className="story-link">{t("nav.services")}</a>
+          <a href="#clients" className="story-link">{t("nav.clients")}</a>
           <a href="#why" className="story-link">{t("nav.advantages")}</a>
           <a href="#faq" className="story-link">{t("nav.faq")}</a>
         </div>

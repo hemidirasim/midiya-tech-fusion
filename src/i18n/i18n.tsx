@@ -15,6 +15,7 @@ const translations: Record<Lang, Dict> = {
     brandName: "Midiya",
     nav: {
       services: "Services",
+      clients: "Clients",
       advantages: "Why Us",
       faq: "FAQ",
       explore: "Explore",
@@ -218,6 +219,7 @@ const translations: Record<Lang, Dict> = {
     brandName: "Midiya",
     nav: {
       services: "Xidmətlər",
+      clients: "Müştərilər",
       advantages: "Üstünlüklər",
       faq: "FAQ",
       explore: "Kəşf et",

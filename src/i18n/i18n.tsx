@@ -277,7 +277,6 @@ const translations: Record<Lang, Dict> = {
           bullets: [
             "Server və şəbəkə (CCTV)",
             "Təhlükəsizlik sistemləri",
-            "Email serverlər",
             "Outsource və 24/7 dəstək",
           ],
         },
@@ -347,7 +346,7 @@ const translations: Record<Lang, Dict> = {
         },
         {
           title: "Yüksək keyfiyyət",
-          desc: "Müasir standartlar, təhlükəsizlik və performans.",
+          desc: "Müasir standartlar, təhlükəsizlik və yüksək performans.",
         },
         {
           title: "Əməkdaşlıq",

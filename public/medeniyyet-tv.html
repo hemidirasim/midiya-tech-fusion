@@ -160,50 +160,19 @@
             justify-content: center;
         }
         
-        /* Status Indicators */
-        .status-bar {
+        /* Maximize button */
+        .maximize-btn {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 10px 15px;
+            right: 16px;
+            bottom: 16px;
+            z-index: 1001;
+            padding: 10px 12px;
             border-radius: 8px;
-            backdrop-filter: blur(10px);
-            transition: opacity 0.3s ease;
-        }
-        
-        .status-bar.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        /* Hide status bar in fullscreen */
-        .video-container:fullscreen .status-bar,
-        .video-container:-webkit-full-screen .status-bar,
-        .video-container:-moz-full-screen .status-bar,
-        .video-container:-ms-fullscreen .status-bar {
-            display: none;
-        }
-        
-        .live-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.6);
+            color: #fff;
             font-size: 14px;
-        }
-        
-        /* Removed audio-status text notification styles */
-        
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            background: #ff3b30;
-            border-radius: 50%;
-            animation: pulse 1s infinite;
-        }
-        
-        .archive-indicator {
-            color: #ff9500;
+            -webkit-tap-highlight-color: transparent;
         }
         
         @keyframes pulse {
@@ -315,17 +284,8 @@
                 Brauzeriniz bu video formatını dəstəkləmir.
             </video>
             
-            
-            <!-- Status Indicator -->
-            <div class="status-bar" id="statusBar">
-                <div class="live-indicator" id="statusIndicator">
-                    <div class="live-dot"></div>
-                    <span>CANLI</span>
-                </div>
-                <button id="tapToUnmute" style="display:none; margin-top:8px; padding:8px 12px; border-radius:6px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:12px;">🔊 Səsi aç</button>
-                <!-- removed audio-status text element -->
-            </div>
-            
+            <button id="maximizeBtn" class="maximize-btn" title="Maximize">⛶ Maximize</button>
+
             <!-- Custom overlay controls removed; using native controls -->
         </div>
     </div>
@@ -335,6 +295,7 @@
         let hlsPlayer = null;
         let lastVolume = 0.8; // Store last volume before muting
         let isWebkitVideoFullscreen = false; // iOS Safari fullscreen state
+        let isMaximized = false; // Custom maximize state
         
         // Initialize audio settings
         function initializeAudio() {
@@ -397,6 +358,15 @@
                     updateFullscreenButton();
                 });
             }
+
+            // Maximize button binds
+            const maximizeBtn = document.getElementById('maximizeBtn');
+            if (maximizeBtn) {
+                maximizeBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleMaximize();
+                });
+            }
         });
         
         function enableAutoplayOnInteraction() {
@@ -429,6 +399,57 @@
                 document.addEventListener('click', tryAutoplay, { once: true });
                 document.addEventListener('keydown', tryAutoplay, { once: true });
                 document.addEventListener('touchstart', tryAutoplay, { once: true });
+            }
+        }
+
+        // Toggle a 9:16 maximized view with screen orientation lock if available
+        async function toggleMaximize() {
+            const container = document.querySelector('.video-container');
+            const video = document.getElementById('videoPlayer');
+            const btn = document.getElementById('maximizeBtn');
+
+            if (!isMaximized) {
+                // Request fullscreen for container or video element
+                try {
+                    if (container.requestFullscreen) await container.requestFullscreen();
+                    else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+                } catch (_) {}
+
+                // Try lock to portrait (9:16) if supported
+                if (screen.orientation && screen.orientation.lock) {
+                    try { await screen.orientation.lock('portrait'); } catch (_) {}
+                }
+
+                // Force aspect ratio using CSS on video element
+                video.style.objectFit = 'cover';
+                video.style.width = '100%';
+                video.style.height = '100%';
+                // Add an overlay wrapper style to center 9:16 crop
+                container.style.backgroundColor = '#000';
+
+                isMaximized = true;
+                btn.textContent = '⛶ Minimize';
+                btn.title = 'Minimize';
+            } else {
+                // Exit fullscreen
+                try {
+                    if (document.exitFullscreen) await document.exitFullscreen();
+                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                } catch (_) {}
+
+                // Unlock orientation if possible
+                if (screen.orientation && screen.orientation.unlock) {
+                    try { screen.orientation.unlock(); } catch (_) {}
+                }
+
+                // Restore fit
+                video.style.objectFit = 'contain';
+                video.style.width = '100%';
+                video.style.height = '100%';
+
+                isMaximized = false;
+                btn.textContent = '⛶ Maximize';
+                btn.title = 'Maximize';
             }
         }
         

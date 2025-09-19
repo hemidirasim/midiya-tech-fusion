@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>DVR Player - Yoda.az Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .main-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Video Player Area */
+        .video-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        
+        .video-overlay-play {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        .video-overlay-play:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        
+        #videoPlayer {
+            width: 100%;
+            height: 100%;
+            max-height: calc(100vh - 200px);
+            object-fit: contain;
+            background: #000;
+        }
+        
+        /* Video Controls Overlay */
+        .video-controls {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+            transition: opacity 0.3s;
+        }
+        
+        .video-controls.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-btn.active {
+            background: #ff3b30;
+        }
+        
+        #fullscreenBtn {
+            font-size: 16px;
+            min-width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        #fullscreenBtn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .time-display {
+            font-size: 12px;
+            color: #ccc;
+            min-width: 60px;
+        }
+        
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .volume-control .control-btn {
+            min-width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .volume-control .control-btn.muted {
+            background: rgba(255, 59, 48, 0.2);
+            color: #ff3b30;
+        }
+        
+        .volume-slider {
+            width: 60px;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .play-pause-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Timeline Section */
+        .timeline-section {
+            height: 200px;
+            background: linear-gradient(to bottom, #1a1a1a, #0f0f0f);
+            display: flex;
+            flex-direction: column;
+            border-top: 2px solid #333;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+        }
+        
+        .timeline-bottom {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 0 20px;
+            height: 100px;
+        }
+        
+        /* Simplified Controls */
+        .simplified-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            margin-left: auto;
+            margin-right: 20px;
+        }
+        
+        .simplified-controls .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Hours Timeline */
+        .hours-timeline {
+            height: 100px;
+            background: linear-gradient(to bottom, #242424, #1a1a1a);
+            border-bottom: 1px solid #444;
+            position: relative;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        
+        .timeline-track {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+        }
+        
+        .hour-section {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            border-left: 1px solid rgba(255,255,255,0.15);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .hour-section:first-child {
+            border-left: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .hour-section:not(:first-child)::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(to bottom, 
+                rgba(255,255,255,0.2) 0%, 
+                rgba(255,255,255,0.1) 30%, 
+                rgba(255,255,255,0.05) 100%);
+        }
+        
+        .hour-section:hover {
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+            z-index: 10;
+        }
+        
+        .hour-label {
+            position: absolute;
+            top: 5px;
+            left: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.95);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            z-index: 5;
+            letter-spacing: 0.5px;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .minutes-track {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 25px;
+            pointer-events: none;
+        }
+        
+        .minute-line {
+            position: absolute;
+            bottom: 0;
+            width: 1px;
+            background: rgba(255,255,255,0.1);
+            height: 6px;
+        }
+        
+        .minute-line.quarter {
+            background: rgba(255,255,255,0.2);
+            height: 10px;
+        }
+        
+        .minute-line.half {
+            background: rgba(255,255,255,0.3);
+            height: 14px;
+            width: 2px;
+            transform: translateX(-50%);
+        }
+        
+        
+        .current-time-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #ff3b30, #ff6b60);
+            z-index: 100;
+            transition: left 0.3s ease;
+            box-shadow: 0 0 15px rgba(255, 59, 48, 0.8);
+        }
+        
+        /* Hover Time Indicator */
+        .hover-time-indicator {
+            position: fixed;
+            background: linear-gradient(135deg, rgba(20,20,20,0.98), rgba(30,30,30,0.98));
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 99999;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            border: 1px solid rgba(255,255,255,0.15);
+            text-align: center;
+            line-height: 1.4;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8), 0 0 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+        
+        .hover-time-indicator.show {
+            opacity: 1;
+        }
+        
+        .hover-time-indicator::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-top: 7px solid rgba(30, 30, 30, 0.98);
+        }
+        
+        .hover-date {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-bottom: 3px;
+            color: #aaa;
+        }
+        
+        .hover-time {
+            font-weight: 600;
+            font-size: 16px;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+        
+        .hover-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 90;
+            box-shadow: 0 0 5px rgba(255,255,255,0.3);
+        }
+        
+        .hover-line.show {
+            opacity: 1;
+        }
+        
+        .current-time-line::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 10px solid #ff3b30;
+        }
+        
+        .current-time-line::after {
+            content: attr(data-time);
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #ff3b30, #ff5a50);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(255,59,48,0.5);
+        }
+        
+        /* Days Navigation */
+        .days-navigation {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            gap: 12px;
+            overflow-x: auto;
+            background: linear-gradient(to bottom, #1a1a1a, #111);
+        }
+        
+        .days-navigation::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .days-navigation::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+        }
+        
+        .days-navigation::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+        
+        .days-navigation::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .day-card {
+            min-width: 120px;
+            height: 80px;
+            background: #333;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .day-card:hover {
+            background: #404040;
+            transform: translateY(-2px);
+        }
+        
+        .day-card.active {
+            background: #ff3b30;
+            transform: translateY(-2px);
+        }
+        
+        .day-card.today {
+            border: 2px solid #007AFF;
+        }
+        
+        .day-number {
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 1;
+        }
+        
+        .day-name {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+        
+        .day-month {
+            font-size: 10px;
+            opacity: 0.6;
+        }
+        
+        /* Status Indicators */
+        .status-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .audio-status {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #ff9500;
+            text-align: center;
+            padding: 5px 10px;
+            background: rgba(255, 149, 0, 0.1);
+            border-radius: 5px;
+            border: 1px solid rgba(255, 149, 0, 0.3);
+        }
+        
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #ff3b30;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+        
+        .archive-indicator {
+            color: #ff9500;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .video-controls {
+                padding: 10px 15px;
+                gap: 10px;
+            }
+            
+            .control-btn {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+            
+            .timeline-section {
+                height: 140px;
+            }
+            
+            .timeline-bottom {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
+                height: auto;
+            }
+            
+            .simplified-controls {
+                margin: 0;
+                padding: 8px 12px;
+                gap: 8px;
+            }
+            
+            .simplified-controls .volume-slider {
+                width: 40px;
+            }
+            
+            .day-card {
+                min-width: 80px;
+                height: 60px;
+            }
+            
+            .day-number {
+                font-size: 18px;
+            }
+            
+            .video-overlay-play {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/flv.js@latest/dist/flv.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Video Player -->
+        <div class="video-container" onclick="togglePlayPause()">
+            <video id="videoPlayer" preload="auto" autoplay muted playsinline>
+                Brauzeriniz bu video formatını dəstəkləmir.
+            </video>
+            
+            <!-- Video Overlay Play Button -->
+            <div class="video-overlay-play" id="overlayPlayBtn">
+                ▶️
+            </div>
+            
+            <!-- Status Indicator -->
+            <div class="status-bar">
+                <div class="live-indicator" id="statusIndicator">
+                    <div class="live-dot"></div>
+                    <span>CANLI</span>
+                </div>
+                <div class="audio-status" id="audioStatus" style="display: none;">
+                    <span>🔇 Səs üçün səhifəyə toxunun</span>
+                </div>
+            </div>
+            
+            
+        </div>
+        
+        <!-- Timeline Section -->
+        <div class="timeline-section">
+            <!-- Hours Timeline -->
+            <div class="hours-timeline" onclick="seekToTime(event)" onmousemove="showHoverTime(event)" onmouseleave="hideHoverTime()">
+                <div class="current-time-line" id="currentTimeLine" data-time="00:00"></div>
+                <div class="hover-line" id="hoverLine"></div>
+                <div class="hover-time-indicator" id="hoverTimeIndicator">
+                    <div class="hover-date">1 Sentyabr 2025</div>
+                    <div class="hover-time">00:00</div>
+                </div>
+                <div class="timeline-track" id="timelineTrack">
+                    <!-- Hours will be generated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Bottom Section -->
+            <div class="timeline-bottom">
+                <!-- Days Navigation -->
+                <div class="days-navigation" id="daysNavigation">
+                    <!-- Days will be generated by JavaScript -->
+                </div>
+                
+                <!-- Simplified Video Controls -->
+                <div class="simplified-controls" id="simplifiedControls">
+                    <div class="volume-control">
+                        <button class="control-btn" onclick="toggleMute()" id="muteBtn">🔊</button>
+                        <input type="range" class="volume-slider" min="0" max="100" value="80" onchange="setVolume(this.value)" id="volumeSlider">
+                    </div>
+                    <button class="control-btn" onclick="toggleFullscreen()" id="fullscreenBtn" title="Tam ekran">⛶</button>
+                    <button class="control-btn active" onclick="switchToLive()" id="liveBtn">CANLI</button>
+                    <button class="play-pause-btn" onclick="togglePlayPause()" id="playPauseBtn">▶️</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isLiveMode = true;
+        let currentSelectedDate = new Date();
+        let mouseInactivityTimer;
+        let flvPlayer = null;
+        let hlsPlayer = null;
+        let lastVolume = 0.8; // Store last volume before muting
+        let isLoadingArchive = false; // Flag to prevent loops
+        
+        
+        // Initialize audio settings
+        function initializeAudio() {
+            const video = document.getElementById('videoPlayer');
+            const volumeSlider = document.getElementById('volumeSlider');
+            
+            // Set initial volume
+            video.volume = lastVolume;
+            if (volumeSlider) {
+                volumeSlider.value = lastVolume * 100;
+            }
+            
+            // Ensure video is not muted initially
+            video.muted = false;
+            
+            // Add event listener for volume changes
+            video.addEventListener('volumechange', function() {
+                if (!video.muted && volumeSlider) {
+                    lastVolume = video.volume;
+                    volumeSlider.value = video.volume * 100;
+                }
+            });
+            
+            // Add event listeners for play/pause state
+            video.addEventListener('play', function() {
+                document.getElementById('playPauseBtn').textContent = '⏸';
+                document.getElementById('overlayPlayBtn').textContent = '⏸';
+            });
+            
+            video.addEventListener('pause', function() {
+                document.getElementById('playPauseBtn').textContent = '▶️';
+                document.getElementById('overlayPlayBtn').textContent = '▶️';
+            });
+            
+            video.addEventListener('ended', function() {
+                document.getElementById('playPauseBtn').textContent = '▶️';
+                document.getElementById('overlayPlayBtn').textContent = '▶️';
+            });
+            
+            // Check if audio is muted and show status
+            checkAudioStatus();
+        }
+        
+        function checkAudioStatus() {
+            const video = document.getElementById('videoPlayer');
+            const audioStatus = document.getElementById('audioStatus');
+            
+            if (video.muted) {
+                audioStatus.style.display = 'block';
+            } else {
+                audioStatus.style.display = 'none';
+            }
+        }
+        
+        // Azerbaijan month names
+        const azMonths = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'İyun', 
+                         'İyul', 'Avqust', 'Sentyabr', 'Oktyabr', 'Noyabr', 'Dekabr'];
+        const azDays = ['Bazar', 'Bazar ertəsi', 'Çərşənbə axşamı', 'Çərşənbə', 
+                       'Cümə axşamı', 'Cümə', 'Şənbə'];
+        
+        // Initialize the system
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today as default selected date
+            currentSelectedDate = new Date();
+            
+            generateHoursTimeline();
+            generateDaysNavigation();
+            updateCurrentTimeLine();
+            
+            // Initialize audio settings
+            initializeAudio();
+            
+            // Initialize live stream
+            console.log('Initializing live stream...');
+            
+            // Initialize FLV player for live stream
+            initializeLiveStream();
+            
+            // Update every minute
+            setInterval(() => {
+                updateCurrentTimeLine();
+                updateTimeDisplay();
+            }, 60000);
+            
+            // Hide controls on mouse inactivity
+            setupMouseActivity();
+            
+            // Setup fullscreen event listeners
+            setupFullscreenEvents();
+        });
+        
+        function initializeLiveStream() {
+            const videoElement = document.getElementById('videoPlayer');
+            
+            // Add error handling for video element
+            videoElement.addEventListener('error', function(e) {
+                console.error('Video element error:', e);
+                console.error('Error details:', videoElement.error);
+                showToast('Video yüklənmədi. Brauzerinizi yeniləyin və yenidən cəhd edin.');
+            });
+            
+            // Add load start event
+            videoElement.addEventListener('loadstart', function() {
+                console.log('Video loading started');
+                showToast('Video yüklənir...');
+            });
+            
+            // Add can play event
+            videoElement.addEventListener('canplay', function() {
+                console.log('Video can start playing');
+            });
+            
+            // Direct stream URLs
+            const hlsUrl = 'https://customer-xe0l1qtroxu1onlw.cloudflarestream.com/f45cb4ab88a369702d2c3a249f10a2de/manifest/video.m3u8';
+            const flvUrl = 'https://medeniyyet.2meet.az/live/livestream.flv';
+            
+            // Try HLS first (better browser support)
+            if (Hls && Hls.isSupported()) {
+                console.log('Using HLS.js for streaming');
+                hlsPlayer = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    backBufferLength: 30,
+                    maxBufferLength: 60,
+                    maxMaxBufferLength: 120,
+                    maxBufferSize: 60 * 1000 * 1000,
+                    maxBufferHole: 0.5,
+                    highBufferWatchdogPeriod: 2,
+                    nudgeOffset: 0.1,
+                    nudgeMaxRetry: 5,
+                    maxFragLookUpTolerance: 0.25,
+                    liveSyncDurationCount: 3,
+                    liveMaxLatencyDurationCount: 10,
+                    liveDurationInfinity: true,
+                    progressive: true,
+                    enableSoftwareAES: true,
+                    debug: false
+                });
+                
+                hlsPlayer.loadSource(hlsUrl);
+                hlsPlayer.attachMedia(videoElement);
+                
+                hlsPlayer.on(Hls.Events.MANIFEST_PARSED, function() {
+                    videoElement.muted = false;
+                    videoElement.volume = 0.8;
+                    
+                    videoElement.play().then(() => {
+                        console.log('HLS stream started successfully');
+                        document.getElementById('playPauseBtn').textContent = '⏸';
+                    }).catch(err => {
+                        console.log('HLS autoplay failed:', err);
+                        showToast('Video başlatmaq üçün play düyməsini basın');
+                    });
+                });
+                
+                hlsPlayer.on(Hls.Events.ERROR, function(event, data) {
+                    console.error('HLS Error:', data);
+                    if (data.fatal) {
+                        console.log('HLS failed, trying FLV...');
+                        tryFLVPlayer(flvUrl);
+                    }
+                });
+                
+            } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+                // For Safari native HLS support
+                console.log('Using native HLS support');
+                videoElement.src = hlsUrl;
+                videoElement.play().then(() => {
+                    console.log('Native HLS stream started successfully');
+                    document.getElementById('playPauseBtn').textContent = '⏸';
+                }).catch(err => {
+                    console.error('Native HLS play failed:', err);
+                    showToast('Video başlatmaq üçün play düyməsini basın');
+                });
+                
+            } else if (typeof flvjs !== 'undefined' && flvjs.isSupported()) {
+                // Try FLV as fallback
+                console.log('HLS not supported, trying FLV...');
+                tryFLVPlayer(flvUrl);
+                
+            } else {
+                // Last resort - try direct video source
+                console.log('No suitable player found, trying direct playback');
+                videoElement.src = flvUrl;
+                videoElement.play().catch(err => {
+                    console.error('Direct playback failed:', err);
+                    showToast('Video oynadıcı dəstəklənmir. Chrome və ya Firefox istifadə edin.');
+                });
+            }
+        }
+        
+        function tryFLVPlayer(url) {
+            if (typeof flvjs === 'undefined' || !flvjs.isSupported()) {
+                showToast('FLV oynadıcı dəstəklənmir');
+                return;
+            }
+            
+            const videoElement = document.getElementById('videoPlayer');
+            
+            // Direct URL without proxy
+            
+            try {
+                flvPlayer = flvjs.createPlayer({
+                    type: 'flv',
+                    url: url,
+                    isLive: true,
+                    hasAudio: true,
+                    hasVideo: true
+                }, {
+                    enableWorker: false,
+                    enableStashBuffer: true,
+                    stashInitialSize: 128,
+                    lazyLoad: false,
+                    lazyLoadMaxDuration: 3 * 60,
+                    lazyLoadRecoverDuration: 30,
+                    deferLoadAfterSourceOpen: false,
+                    autoCleanupSourceBuffer: true,
+                    autoCleanupMaxBackwardDuration: 30,
+                    autoCleanupMinBackwardDuration: 10,
+                    statisticsInfoReportInterval: 600,
+                    fixAudioTimestampGap: true,
+                    flushingTime: 2
+                });
+                
+                flvPlayer.attachMediaElement(videoElement);
+                flvPlayer.load();
+                
+                // Auto play after load
+                flvPlayer.on(flvjs.Events.MEDIA_INFO, (info) => {
+                    console.log('FLV Media Info:', info);
+                    // Ensure audio is enabled
+                    videoElement.muted = false;
+                    videoElement.volume = 0.8;
+                    
+                    // Auto play the stream
+                    console.log('FLV stream ready - starting playback');
+                    videoElement.play().then(() => {
+                        console.log('FLV stream started successfully');
+                        document.getElementById('playPauseBtn').textContent = '⏸';
+                    }).catch(err => {
+                        console.log('FLV autoplay failed, user interaction required:', err);
+                        showToast('Video başlatmaq üçün play düyməsini basın');
+                    });
+                });
+                
+                // Handle errors
+                flvPlayer.on(flvjs.Events.ERROR, (errorType, errorDetail, errorInfo) => {
+                    console.error('FLV Player Error:', errorType, errorDetail, errorInfo);
+                    
+                    if (errorType === flvjs.ErrorTypes.NETWORK_ERROR) {
+                        showToast('Şəbəkə xətası. İnternet bağlantınızı yoxlayın.');
+                    } else if (errorType === flvjs.ErrorTypes.MEDIA_ERROR) {
+                        showToast('Video format xətası.');
+                    } else {
+                        showToast('Video yüklənmədi.');
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Failed to create FLV player:', error);
+                showToast('Video oynadıcı yaradıla bilmədi.');
+            }
+        }
+        
+        function generateHoursTimeline() {
+            const container = document.getElementById('timelineTrack');
+            container.innerHTML = '';
+            
+            for (let hour = 0; hour < 24; hour++) {
+                const hourSection = document.createElement('div');
+                hourSection.className = 'hour-section';
+                hourSection.dataset.hour = hour;
+                
+                // Hour label
+                const hourLabel = document.createElement('div');
+                hourLabel.className = 'hour-label';
+                hourLabel.textContent = `${String(hour).padStart(2, '0')}:00`;
+                hourSection.appendChild(hourLabel);
+                
+                // Minutes track - simple lines at 15-minute intervals
+                const minutesTrack = document.createElement('div');
+                minutesTrack.className = 'minutes-track';
+                
+                // Add lines at 15, 30, 45 minutes
+                [15, 30, 45].forEach(min => {
+                    const line = document.createElement('div');
+                    line.className = 'minute-line';
+                    
+                    // Position based on percentage
+                    const leftPercent = (min / 60) * 100;
+                    line.style.left = `${leftPercent}%`;
+                    
+                    // Special styling
+                    if (min === 30) {
+                        line.classList.add('half');
+                    } else {
+                        line.classList.add('quarter');
+                    }
+                    
+                    minutesTrack.appendChild(line);
+                });
+                
+                hourSection.appendChild(minutesTrack);
+                container.appendChild(hourSection);
+            }
+        }
+        
+        function generateDaysNavigation() {
+            const container = document.getElementById('daysNavigation');
+            container.innerHTML = '';
+            
+            // Generate 8 days (7 past days + today)
+            const today = new Date();
+            for (let i = -7; i <= 0; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                
+                const dayCard = document.createElement('div');
+                dayCard.className = 'day-card';
+                dayCard.dataset.date = formatDate(date);
+                
+                if (i === 0) {
+                    dayCard.classList.add('today');
+                    dayCard.classList.add('active'); // Today is active by default
+                }
+                
+                if (formatDate(date) === formatDate(currentSelectedDate)) {
+                    dayCard.classList.add('active');
+                }
+                
+                dayCard.innerHTML = `
+                    <div class="day-number">${date.getDate()}</div>
+                    <div class="day-name">${azDays[date.getDay()]}</div>
+                    <div class="day-month">${azMonths[date.getMonth()]}</div>
+                `;
+                
+                dayCard.onclick = () => selectDate(date);
+                container.appendChild(dayCard);
+            }
+        }
+        
+        
+        function updateCurrentTimeLine() {
+            const now = new Date();
+            if (!isLiveMode || formatDate(now) !== formatDate(currentSelectedDate)) {
+                return;
+            }
+            
+            const totalMinutes = now.getHours() * 60 + now.getMinutes();
+            const percentage = (totalMinutes / (24 * 60)) * 100;
+            
+            const timeLine = document.getElementById('currentTimeLine');
+            timeLine.style.left = `${percentage}%`;
+            
+            // Update time label
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            timeLine.setAttribute('data-time', timeStr);
+        }
+        
+        function updateTimeDisplay(hours = null, minutes = null) {
+            let timeStr;
+            
+            if (hours !== null && minutes !== null) {
+                timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            } else {
+                const now = new Date();
+                timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            }
+            
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+        
+        function selectDate(date) {
+            currentSelectedDate = date;
+            
+            // Update active day
+            document.querySelectorAll('.day-card').forEach(card => {
+                card.classList.remove('active');
+                if (card.dataset.date === formatDate(date)) {
+                    card.classList.add('active');
+                }
+            });
+            
+            // Update hours timeline
+            generateHoursTimeline();
+            
+            // If selecting today, switch to live
+            const today = new Date();
+            if (formatDate(date) === formatDate(today)) {
+                switchToLive();
+            } else {
+                switchToArchive();
+            }
+        }
+        
+        function seekToTime(event) {
+            const container = event.currentTarget;
+            const track = document.getElementById('timelineTrack');
+            const rect = track.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            
+            // Calculate time based on click position (percentage of timeline width)
+            const percentage = clickX / rect.width;
+            const totalMinutes = percentage * 24 * 60;
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = Math.floor(totalMinutes % 60);
+            
+            // Ensure valid time range
+            const validHours = Math.max(0, Math.min(23, hours));
+            const validMinutes = Math.max(0, Math.min(59, minutes));
+            
+            // Round to nearest minute since we have separate .ts files for each minute
+            const roundedMinutes = Math.round(validMinutes);
+            
+            // Always try to play archive when clicking on timeline
+            // The server will handle if the recording exists or not
+            console.log('Timeline click - Date:', currentSelectedDate, 'Hour:', validHours, 'Minute:', roundedMinutes);
+            console.log('Target time:', `${String(validHours).padStart(2, '0')}:${String(roundedMinutes).padStart(2, '0')}`);
+            
+            playArchive(currentSelectedDate, validHours, roundedMinutes);
+            
+            // Update visual feedback
+            updateTimeDisplay(validHours, roundedMinutes);
+        }
+        
+        function showHoverTime(event) {
+            const container = event.currentTarget;
+            const track = document.getElementById('timelineTrack');
+            const rect = track.getBoundingClientRect();
+            const hoverLine = document.getElementById('hoverLine');
+            const hoverIndicator = document.getElementById('hoverTimeIndicator');
+            
+            // Calculate mouse position relative to timeline
+            const mouseX = event.clientX - rect.left;
+            const percentage = Math.max(0, Math.min(1, mouseX / rect.width));
+            
+            // Calculate time based on mouse position
+            const totalMinutes = Math.floor(percentage * 24 * 60);
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = Math.floor(totalMinutes % 60);
+            
+            // Update hover line position
+            hoverLine.style.left = `${percentage * 100}%`;
+            hoverLine.classList.add('show');
+            
+            // Format date string in Azerbaijani
+            const selectedDate = currentSelectedDate;
+            const dayName = azDays[selectedDate.getDay()];
+            const dayNum = selectedDate.getDate();
+            const monthName = azMonths[selectedDate.getMonth()];
+            const year = selectedDate.getFullYear();
+            
+            // Create date string
+            const dateStr = `${dayNum} ${monthName} ${year}, ${dayName}`;
+            const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            
+            // Update hover time indicator content
+            hoverIndicator.innerHTML = `
+                <div class="hover-date">${dateStr}</div>
+                <div class="hover-time">${timeStr}</div>
+            `;
+            
+            // Position tooltip with fixed positioning
+            const indicatorRect = container.getBoundingClientRect();
+            const tooltipX = indicatorRect.left + (percentage * indicatorRect.width);
+            const tooltipY = indicatorRect.top - 50;
+            
+            // After 22:00, show tooltip on the left side to prevent going off-screen
+            if (hours >= 22) {
+                hoverIndicator.style.left = `${tooltipX}px`;
+                hoverIndicator.style.top = `${tooltipY}px`;
+                hoverIndicator.style.transform = 'translateX(-100%) translateX(-10px)';
+            } else {
+                hoverIndicator.style.left = `${tooltipX}px`;
+                hoverIndicator.style.top = `${tooltipY}px`;
+                hoverIndicator.style.transform = 'translateX(-50%)';
+            }
+            hoverIndicator.classList.add('show');
+        }
+        
+        function hideHoverTime() {
+            const hoverLine = document.getElementById('hoverLine');
+            const hoverIndicator = document.getElementById('hoverTimeIndicator');
+            
+            hoverLine.classList.remove('show');
+            hoverIndicator.classList.remove('show');
+        }
+        
+        function playArchive(date, hour, minute = 0) {
+            // Prevent loops
+            if (isLoadingArchive) {
+                console.log('⚠️ Archive loading already in progress, skipping...');
+                return;
+            }
+            
+            isLoadingArchive = true;
+            switchToArchive();
+            
+            // Handle both Date objects and date strings
+            let targetDate;
+            if (typeof date === 'string') {
+                // If date is a string (from old recordings), convert to Date
+                const [year, month, day] = date.split('-').map(Number);
+                targetDate = new Date(year, month - 1, day);
+            } else {
+                targetDate = date;
+            }
+            
+            // Format date for URL (MM/DD format)
+            const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+            const day = String(targetDate.getDate()).padStart(2, '0');
+            const hourStr = String(hour).padStart(2, '0');
+            
+            // Construct archive URL based on the correct structure
+            // Files are stored as MM/DD/HH/index.m3u8 (month/day/hour/index.m3u8)
+            const baseUrl = 'http://4webflow.com/hls';
+            const archiveUrl = `${baseUrl}/${month}/${day}/${hourStr}/index.m3u8`;
+            
+
+            
+            const timeStr = `${hourStr}:${String(minute).padStart(2, '0')}`;
+            showToast(`Arxiv yüklənir: ${month}/${day} ${timeStr}`);
+            
+            console.log(`Loading archive: ${archiveUrl}`);
+            
+            // Skip URL check due to CORS issues, try to load directly
+            console.log('Skipping URL check due to CORS, trying to load archive directly...');
+            loadArchiveVideo(archiveUrl, minute, 0); // Start with no proxy
+            
+            // Reset flag after a timeout
+            setTimeout(() => {
+                isLoadingArchive = false;
+            }, 1000); // Reduced to 1s for faster response
+        }
+        
+        function loadArchiveVideo(archiveUrl, minute, proxyIndex = 0) {
+            console.log('=== LOADING ARCHIVE VIDEO ===');
+            console.log('Archive URL:', archiveUrl);
+            console.log('Target minute:', minute);
+            console.log('Proxy Index:', proxyIndex);
+            console.log('============================');
+            
+            // Load archive video
+            const video = document.getElementById('videoPlayer');
+            
+            // Destroy existing players
+            if (flvPlayer) {
+                flvPlayer.pause();
+                flvPlayer.unload();
+                flvPlayer.detachMediaElement();
+                flvPlayer.destroy();
+                flvPlayer = null;
+            }
+            
+            if (hlsPlayer) {
+                hlsPlayer.destroy();
+                hlsPlayer = null;
+            }
+            
+            // Try to load archive using HLS
+            if (Hls && Hls.isSupported()) {
+                console.log('✅ HLS.js is supported, creating player...');
+                console.log('Loading archive with HLS.js:', archiveUrl);
+                
+                hlsPlayer = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true, // Enable low latency mode
+                    backBufferLength: 30, // Reduce buffer for faster response
+                    maxBufferLength: 60, // Limit max buffer
+                    maxMaxBufferLength: 120, // Limit max max buffer
+                    maxBufferSize: 60 * 1000 * 1000, // 60MB max buffer size
+                    maxBufferHole: 0.5, // Reduce buffer hole tolerance
+                    highBufferWatchdogPeriod: 2, // Faster buffer monitoring
+                    nudgeOffset: 0.1, // Faster nudge
+                    nudgeMaxRetry: 5, // Reduce retry attempts
+                    maxFragLookUpTolerance: 0.25, // Faster fragment lookup
+                    liveSyncDurationCount: 3, // Reduce live sync duration
+                    liveMaxLatencyDurationCount: 10, // Reduce max latency
+                    liveDurationInfinity: true, // Enable infinite duration for live
+                    progressive: true, // Enable progressive parsing
+                    enableSoftwareAES: true, // Enable software AES for faster decryption
+                    debug: false // Disable debug for better performance
+                });
+                
+                console.log('HLS player created, loading source...');
+                hlsPlayer.loadSource(archiveUrl);
+                hlsPlayer.attachMedia(video);
+                console.log('Source loaded and attached to video element');
+                
+                hlsPlayer.on(Hls.Events.MANIFEST_PARSED, function() {
+                    console.log('Archive loaded successfully');
+                    
+                    // Start playing immediately with minimal delay
+                    setTimeout(() => {
+                        const targetTime = minute * 60; // Convert minute to seconds
+                        console.log(`🎯 Seeking to minute ${minute} (${targetTime} seconds)`);
+                        
+                        // Check if target time is within video duration
+                        if (video.duration && targetTime > video.duration) {
+                            console.log(`⚠️ Target time ${targetTime}s exceeds video duration ${video.duration}s`);
+                            const adjustedTime = Math.max(0, video.duration - 2); // Only 2 seconds before end
+                            console.log(`🔄 Adjusting to: ${Math.floor(adjustedTime / 60)}:${Math.floor(adjustedTime % 60).toString().padStart(2, '0')}`);
+                            video.currentTime = adjustedTime;
+                        } else {
+                            console.log(`✅ Target time ${targetTime}s is within video duration ${video.duration || 'unknown'}s`);
+                            video.currentTime = targetTime;
+                        }
+                        
+                        // Start playing immediately after seek
+                        video.addEventListener('seeked', function onSeeked() {
+                            video.removeEventListener('seeked', onSeeked);
+                            
+                            const currentMin = Math.floor(video.currentTime / 60);
+                            const currentSec = Math.floor(video.currentTime % 60);
+                            console.log(`✅ Seeked to: ${currentMin}:${currentSec.toString().padStart(2, '0')}`);
+                            
+                            // Play immediately
+                            video.play().then(() => {
+                                document.getElementById('playPauseBtn').textContent = '⏸';
+                                console.log(`🎬 Archive playing from: ${currentMin}:${currentSec.toString().padStart(2, '0')}`);
+                            }).catch(err => {
+                                console.error('❌ Archive play failed:', err);
+                                showToast('Arxiv videonu başladıla bilmədi');
+                            });
+                        });
+                        
+                        // Very fast fallback if seek takes too long
+                        setTimeout(() => {
+                            if (video.paused) {
+                                console.log('⚡ Ultra-fast fallback, playing immediately');
+                                video.play().then(() => {
+                                    document.getElementById('playPauseBtn').textContent = '⏸';
+                                    const currentMin = Math.floor(video.currentTime / 60);
+                                    const currentSec = Math.floor(video.currentTime % 60);
+                                    console.log(`🎬 Archive playing from: ${currentMin}:${currentSec.toString().padStart(2, '0')}`);
+                                }).catch(err => {
+                                    console.error('❌ Archive play failed:', err);
+                                });
+                            }
+                        }, 300); // Reduced from 3s to 300ms
+                        
+                    }, 50); // Reduced from 1s to 50ms for ultra-fast response
+                });
+                
+                hlsPlayer.on(Hls.Events.ERROR, function(event, data) {
+                    console.error('=== HLS ERROR DETAILS ===');
+                    console.error('Error Type:', data.type);
+                    console.error('Error Details:', data.details);
+                    console.error('Error Fatal:', data.fatal);
+                    console.error('Error URL:', data.url);
+                    console.error('Error Response:', data.response);
+                    console.error('========================');
+                    
+                    if (data.fatal) {
+                        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                            if (data.details === Hls.ErrorDetails.MANIFEST_LOAD_ERROR) {
+                                console.log('Manifest load error - could be CORS or file not found');
+                                
+                                // Skip CORS bypass and alternatives - go straight to live
+                                console.log('❌ Archive not found - switching to live immediately');
+                                showToast('Bu vaxt üçün arxiv mövcud deyil. Canlı yayıma keçilir...');
+                                
+                                // Switch to live immediately
+                                setTimeout(() => {
+                                    switchToLive();
+                                }, 500); // Very fast switch
+                            } else if (data.details === Hls.ErrorDetails.MANIFEST_PARSE_ERROR) {
+                                showToast('Arxiv manifest formatı düzgün deyil.');
+                                console.log('Manifest parse error - invalid HLS format');
+                                
+                                // Fallback to live stream
+                                setTimeout(() => {
+                                    console.log('Switching to live stream due to manifest parse error');
+                                    switchToLive();
+                                }, 2000);
+                            } else {
+                                showToast('Şəbəkə xətası. Arxiv yüklənə bilmədi.');
+                                console.log('Network error - could be CORS, 404, or server issue');
+                                
+                                // Fallback to live stream
+                                setTimeout(() => {
+                                    console.log('Switching to live stream due to network error');
+                                    switchToLive();
+                                }, 2000);
+                            }
+                            console.log('Archive URL that failed:', archiveUrl);
+                        }
+                    }
+                });
+                
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // For Safari native HLS support
+                console.log('✅ Safari native HLS support detected');
+                console.log('Loading archive with native HLS:', archiveUrl);
+                video.src = archiveUrl;
+                
+                // Add error handling for Safari
+                video.addEventListener('error', function(e) {
+                    console.error('Safari: Video error occurred:', e);
+                    console.error('Error details:', video.error);
+                    showToast('Safari: Arxiv yüklənə bilmədi');
+                    setTimeout(() => {
+                        switchToLive();
+                    }, 2000);
+                });
+                
+                // Wait for video to be ready, then seek to specific minute
+                video.addEventListener('loadedmetadata', function() {
+                    const targetTime = minute * 60; // Convert minute to seconds
+                    console.log(`Safari: Seeking to minute ${minute} (${targetTime} seconds)`);
+                    
+                    // Try to seek to exact minute
+                    video.currentTime = targetTime;
+                    
+                    // Wait for seek to complete, then start playing
+                    video.addEventListener('seeked', function onSeeked() {
+                        video.removeEventListener('seeked', onSeeked);
+                        
+                        console.log(`Safari: Successfully seeked to minute ${minute}`);
+                        
+                        // After seeking, start playing
+                        video.play().then(() => {
+                            document.getElementById('playPauseBtn').textContent = '⏸';
+                            console.log(`Safari: Archive playing from minute ${minute}`);
+                        }).catch(err => {
+                            console.error('Safari: Archive play failed after seek:', err);
+                            showToast('Arxiv videonu başladıla bilmədi');
+                        });
+                    });
+                    
+                    // Fallback if seek takes too long
+                    setTimeout(() => {
+                        if (video.paused) {
+                            console.log('Safari: Seek timeout, trying to play anyway');
+                            video.play().then(() => {
+                                document.getElementById('playPauseBtn').textContent = '⏸';
+                            }).catch(err => {
+                                console.error('Safari: Archive play failed after timeout:', err);
+                                showToast('Safari: Arxiv oynadıla bilmədi');
+                            });
+                        }
+                    }, 3000);
+                    
+                    // Add timeout for video loading
+                    setTimeout(() => {
+                        if (video.readyState === 0) { // HAVE_NOTHING
+                            console.log('Safari: Video loading timeout, switching to live');
+                            showToast('Safari: Arxiv yüklənmədi, canlı yayıma keçilir');
+                            switchToLive();
+                        }
+                    }, 10000); // 10 second timeout for video loading
+                });
+                
+            } else {
+                showToast('Arxiv formatı dəstəklənmir');
+                switchToLive();
+            }
+        }
+        
+        function switchToLive() {
+            isLiveMode = true;
+            isLoadingArchive = false; // Reset archive loading flag
+            const statusEl = document.getElementById('statusIndicator');
+            const liveBtn = document.getElementById('liveBtn');
+            
+            statusEl.innerHTML = '<div class="live-dot"></div><span>CANLI</span>';
+            liveBtn.classList.add('active');
+            
+            // Destroy existing players if exists
+            if (flvPlayer) {
+                flvPlayer.pause();
+                flvPlayer.unload();
+                flvPlayer.detachMediaElement();
+                flvPlayer.destroy();
+                flvPlayer = null;
+            }
+            
+            if (hlsPlayer) {
+                hlsPlayer.destroy();
+                hlsPlayer = null;
+            }
+            
+            // Reinitialize live stream
+            initializeLiveStream();
+            
+            // Reset play button to play state
+            document.getElementById('playPauseBtn').textContent = '▶️';
+            
+            updateCurrentTimeLine();
+        }
+        
+        function switchToArchive() {
+            isLiveMode = false;
+            const statusEl = document.getElementById('statusIndicator');
+            const liveBtn = document.getElementById('liveBtn');
+            
+            statusEl.innerHTML = '<span class="archive-indicator">ARXİV</span>';
+            liveBtn.classList.remove('active');
+            
+            // Destroy FLV player when switching to archive
+            if (flvPlayer) {
+                flvPlayer.pause();
+                flvPlayer.unload();
+                flvPlayer.detachMediaElement();
+                flvPlayer.destroy();
+                flvPlayer = null;
+            }
+            
+            // Reset play button to play state
+            document.getElementById('playPauseBtn').textContent = '▶️';
+        }
+        
+        function seekTime(seconds) {
+            const video = document.getElementById('videoPlayer');
+            
+            if (isLiveMode) {
+                // In live mode, seek is not available
+                showToast('Canlı yayımda geri/irəli keçmək mümkün deyil');
+                return;
+            }
+            
+            // In archive mode, seek to specific time
+            const newTime = video.currentTime + seconds;
+            if (newTime >= 0 && newTime <= video.duration) {
+                video.currentTime = newTime;
+                console.log(`Seeking to: ${newTime} seconds`);
+            } else {
+                showToast('Bu vaxta keçmək mümkün deyil');
+            }
+        }
+        
+        function togglePlayPause() {
+            const video = document.getElementById('videoPlayer');
+            const btn = document.getElementById('playPauseBtn');
+            const overlayBtn = document.getElementById('overlayPlayBtn');
+            
+            if (video.paused) {
+                // Start playing
+                video.play().then(() => {
+                    btn.textContent = '⏸';
+                    overlayBtn.textContent = '⏸';
+                    console.log('Video started playing');
+                }).catch(err => {
+                    console.error('Failed to play video:', err);
+                    showToast('Video başladıla bilmədi. Yenidən cəhd edin.');
+                });
+            } else {
+                // Pause video
+                video.pause();
+                btn.textContent = '▶️';
+                overlayBtn.textContent = '▶️';
+                console.log('Video paused');
+            }
+        }
+        
+        function setVolume(value) {
+            const video = document.getElementById('videoPlayer');
+            video.volume = value / 100;
+            lastVolume = video.volume; // Update lastVolume
+            
+            // Update mute button state
+            const muteBtn = document.getElementById('muteBtn');
+            if (value > 0) {
+                video.muted = false;
+                muteBtn.textContent = '🔊';
+                muteBtn.classList.remove('muted');
+            } else {
+                video.muted = true;
+                muteBtn.textContent = '🔇';
+                muteBtn.classList.add('muted');
+            }
+            
+            checkAudioStatus();
+        }
+        
+        function toggleMute() {
+            const video = document.getElementById('videoPlayer');
+            const muteBtn = document.getElementById('muteBtn');
+            const volumeSlider = document.getElementById('volumeSlider');
+            
+            if (video.muted) {
+                video.muted = false;
+                muteBtn.textContent = '🔊';
+                muteBtn.classList.remove('muted');
+                // Restore last volume
+                video.volume = lastVolume;
+                volumeSlider.value = lastVolume * 100;
+            } else {
+                lastVolume = video.volume;
+                video.muted = true;
+                muteBtn.textContent = '🔇';
+                muteBtn.classList.add('muted');
+            }
+            
+            checkAudioStatus();
+        }
+        
+        function adjustVolume(delta) {
+            const video = document.getElementById('videoPlayer');
+            const volumeSlider = document.getElementById('volumeSlider');
+            
+            // Unmute if muted
+            if (video.muted) {
+                video.muted = false;
+                const muteBtn = document.getElementById('muteBtn');
+                muteBtn.textContent = '🔊';
+                muteBtn.classList.remove('muted');
+            }
+            
+            // Adjust volume
+            let newVolume = video.volume + delta;
+            newVolume = Math.max(0, Math.min(1, newVolume)); // Clamp between 0 and 1
+            
+            video.volume = newVolume;
+            lastVolume = newVolume;
+            
+            if (volumeSlider) {
+                volumeSlider.value = newVolume * 100;
+            }
+            
+            checkAudioStatus();
+        }
+        
+        
+        function setupMouseActivity() {
+            const controls = document.getElementById('videoControls');
+            const overlayPlayBtn = document.getElementById('overlayPlayBtn');
+            let overlayTimer;
+            
+            function showControls() {
+                controls.classList.remove('hidden');
+                clearTimeout(mouseInactivityTimer);
+                mouseInactivityTimer = setTimeout(() => {
+                    controls.classList.add('hidden');
+                }, 3000);
+            }
+            
+            function hideOverlayPlay() {
+                overlayPlayBtn.style.opacity = '0';
+            }
+            
+            function showOverlayPlay() {
+                overlayPlayBtn.style.opacity = '0.7';
+                clearTimeout(overlayTimer);
+                overlayTimer = setTimeout(() => {
+                    overlayPlayBtn.style.opacity = '0';
+                }, 3000);
+            }
+            
+            function enableAudio() {
+                const video = document.getElementById('videoPlayer');
+                if (video.muted) {
+                    video.muted = false;
+                    video.volume = lastVolume;
+                    const volumeSlider = document.getElementById('volumeSlider');
+                    if (volumeSlider) {
+                        volumeSlider.value = lastVolume * 100;
+                    }
+                    const muteBtn = document.getElementById('muteBtn');
+                    muteBtn.textContent = '🔊';
+                    muteBtn.classList.remove('muted');
+                    checkAudioStatus();
+                }
+            }
+            
+            // Video container mouse events
+            const videoContainer = document.querySelector('.video-container');
+            videoContainer.addEventListener('mousemove', showOverlayPlay);
+            videoContainer.addEventListener('mouseenter', showOverlayPlay);
+            videoContainer.addEventListener('mouseleave', hideOverlayPlay);
+            
+            // Global events
+            document.addEventListener('mousemove', showControls);
+            document.addEventListener('click', showControls);
+            document.addEventListener('click', enableAudio);
+            document.addEventListener('keydown', enableAudio);
+            document.addEventListener('touchstart', enableAudio);
+            
+            showControls(); // Show initially
+            showOverlayPlay(); // Show overlay initially
+        }
+        
+        function formatDate(date) {
+            return date.getFullYear() + '-' + 
+                   String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(date.getDate()).padStart(2, '0');
+        }
+        
+        function showToast(message) {
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0,0,0,0.9);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 25px;
+                font-size: 14px;
+                z-index: 1000;
+                backdrop-filter: blur(10px);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 3000);
+        }
+        
+        function toggleFullscreen() {
+            const videoContainer = document.querySelector('.video-container');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            
+            if (!document.fullscreenElement) {
+                // Enter fullscreen
+                if (videoContainer.requestFullscreen) {
+                    videoContainer.requestFullscreen();
+                } else if (videoContainer.webkitRequestFullscreen) {
+                    videoContainer.webkitRequestFullscreen();
+                } else if (videoContainer.msRequestFullscreen) {
+                    videoContainer.msRequestFullscreen();
+                }
+                fullscreenBtn.textContent = '⛶';
+                fullscreenBtn.title = 'Tam ekrandan çıx';
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                fullscreenBtn.textContent = '⛶';
+                fullscreenBtn.title = 'Tam ekran';
+            }
+        }
+        
+        function setupFullscreenEvents() {
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            
+            // Listen for fullscreen changes
+            document.addEventListener('fullscreenchange', updateFullscreenButton);
+            document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+            document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+            document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+            
+            // Listen for ESC key to exit fullscreen
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.fullscreenElement) {
+                    updateFullscreenButton();
+                }
+            });
+        }
+        
+        function updateFullscreenButton() {
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            
+            if (document.fullscreenElement) {
+                fullscreenBtn.textContent = '⛶';
+                fullscreenBtn.title = 'Tam ekrandan çıx';
+            } else {
+                fullscreenBtn.textContent = '⛶';
+                fullscreenBtn.title = 'Tam ekran';
+            }
+        }
+        
+
+        
+
+        
+        // Function to try alternative archive times when the requested time is not available
+        function tryAlternativeArchiveTime(failedUrl, originalMinute) {
+            console.log('=== TRYING ALTERNATIVE ARCHIVE TIMES ===');
+            isLoadingArchive = false; // Reset flag to allow alternatives
+            
+            // Extract date, hour and minute from failed URL
+            const urlParts = failedUrl.split('/');
+            const month = urlParts[urlParts.length - 4]; // MM
+            const day = urlParts[urlParts.length - 3];   // DD
+            const hour = urlParts[urlParts.length - 2];  // HH
+            
+            console.log(`Failed URL: ${failedUrl}`);
+            console.log(`Month: ${month}, Day: ${day}, Minute: ${originalMinute}`);
+            
+            // Try different strategies:
+            // 1. Try the same day but different minutes
+            // 2. Try different days
+            
+            const alternatives = [
+                // Same day, different minutes (round to nearest 15-minute interval)
+                { month, day, hour, minute: Math.floor(originalMinute / 15) * 15 },
+                // Same day, different hour, same minute
+                { month, day, hour: String(parseInt(hour) - 1).padStart(2, '0'), minute: originalMinute },
+                { month, day, hour: String(parseInt(hour) + 1).padStart(2, '0'), minute: originalMinute },
+                // Previous day, same time
+                { month, day: String(parseInt(day) - 1).padStart(2, '0'), hour, minute: originalMinute },
+                // Next day, same time
+                { month, day: String(parseInt(day) + 1).padStart(2, '0'), hour, minute: originalMinute }
+            ];
+            
+            console.log('Trying alternatives:', alternatives);
+            
+            // Try each alternative
+            tryAlternative(alternatives, 0);
+        }
+        
+        function tryAlternative(alternatives, index) {
+            // Skip alternatives - go straight to live
+            console.log('⚡ Skipping alternatives, switching to live immediately');
+            showToast('Arxiv tapılmadı, canlı yayıma keçilir...');
+            setTimeout(() => {
+                switchToLive();
+            }, 300); // Very fast switch
+        }
+
+
+        // Test function
+        function testArchive() {
+            const testDate = new Date('2025-09-03');
+            playArchive(testDate, 14, 5);
+        }
+        
+        // Ultra-fast test function
+        function testFastArchive() {
+            console.log('⚡ Testing ultra-fast archive loading...');
+            const testDate = new Date('2025-09-03');
+            playArchive(testDate, 14, 5);
+        }
+        
+        // Add global functions
+        window.testArchive = testArchive;
+        window.testFastArchive = testFastArchive;
+        
+        // Debug function to check video status
+        function debugVideoStatus() {
+            const video = document.getElementById('videoPlayer');
+            console.log('=== VIDEO DEBUG INFO ===');
+            console.log('Video src:', video.src);
+            console.log('Video currentSrc:', video.currentSrc);
+            console.log('Video readyState:', video.readyState);
+            console.log('Video networkState:', video.networkState);
+            console.log('Video paused:', video.paused);
+            console.log('Video muted:', video.muted);
+            console.log('Video volume:', video.volume);
+            console.log('Video duration:', video.duration);
+            console.log('Video currentTime:', video.currentTime);
+            console.log('Video error:', video.error);
+            console.log('HLS Player:', hlsPlayer ? 'Active' : 'Not active');
+            console.log('FLV Player:', flvPlayer ? 'Active' : 'Not active');
+            console.log('Live Mode:', isLiveMode);
+            console.log('========================');
+            
+            // Show status in toast
+            let status = `Video: ${video.paused ? 'Paused' : 'Playing'}`;
+            if (video.error) {
+                status += ` | Error: ${video.error.code}`;
+            }
+            showToast(status);
+        }
+        
+        window.debugVideoStatus = debugVideoStatus;
+        
+        // Initialize time display
+        updateTimeDisplay();
+    </script>
+</body>
+</html>

@@ -342,6 +342,7 @@
         let flvPlayer = null;
         let hlsPlayer = null;
         let lastVolume = 0.8; // Store last volume before muting
+        let isWebkitVideoFullscreen = false; // iOS Safari fullscreen state
         
         // Initialize audio settings
         function initializeAudio() {
@@ -420,6 +421,19 @@
             
             // Setup play button event listener
             setupPlayButton();
+
+            // Track iOS Safari video fullscreen begin/end
+            const videoEl = document.getElementById('videoPlayer');
+            if (videoEl) {
+                videoEl.addEventListener('webkitbeginfullscreen', function() {
+                    isWebkitVideoFullscreen = true;
+                    updateFullscreenButton();
+                });
+                videoEl.addEventListener('webkitendfullscreen', function() {
+                    isWebkitVideoFullscreen = false;
+                    updateFullscreenButton();
+                });
+            }
         });
         
         function enableAutoplayOnInteraction() {
@@ -843,9 +857,25 @@
         function toggleFullscreen() {
             const videoContainer = document.querySelector('.video-container');
             const fullscreenBtn = document.getElementById('fullscreenBtn');
-            
+            const video = document.getElementById('videoPlayer');
+
+            // iOS Safari: use webkitEnterFullscreen on the video element
+            const canWebkitEnter = video && (typeof video.webkitEnterFullscreen === 'function' || typeof video.webkitEnterFullScreen === 'function');
+            if (canWebkitEnter) {
+                try {
+                    if (!isWebkitVideoFullscreen) {
+                        (video.webkitEnterFullscreen || video.webkitEnterFullScreen).call(video);
+                    } else if (typeof video.webkitExitFullscreen === 'function') {
+                        video.webkitExitFullscreen();
+                    }
+                    return;
+                } catch (e) {
+                    console.log('iOS webkit fullscreen failed, falling back:', e);
+                }
+            }
+
+            // Standard Fullscreen API
             if (!document.fullscreenElement) {
-                // Enter fullscreen
                 if (videoContainer.requestFullscreen) {
                     videoContainer.requestFullscreen();
                 } else if (videoContainer.webkitRequestFullscreen) {
@@ -856,7 +886,6 @@
                 fullscreenBtn.textContent = '⛶';
                 fullscreenBtn.title = 'Tam ekrandan çıx';
             } else {
-                // Exit fullscreen
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
                 } else if (document.webkitExitFullscreen) {
@@ -890,7 +919,7 @@
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             const statusBar = document.querySelector('.status-bar');
             
-            if (document.fullscreenElement) {
+            if (document.fullscreenElement || isWebkitVideoFullscreen) {
                 fullscreenBtn.textContent = '⛶';
                 fullscreenBtn.title = 'Tam ekrandan çıx';
                 // Hide status bar in fullscreen

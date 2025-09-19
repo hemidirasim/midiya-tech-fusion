@@ -62,6 +62,7 @@
             backdrop-filter: blur(10px);
             transition: opacity 0.3s;
             z-index: 1000;
+            touch-action: manipulation;
         }
         
         .video-controls.hidden {
@@ -81,6 +82,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            touch-action: manipulation;
         }
         
         .control-btn:hover {
@@ -190,16 +192,7 @@
             font-size: 14px;
         }
         
-        .audio-status {
-            margin-top: 8px;
-            font-size: 12px;
-            color: #ff9500;
-            text-align: center;
-            padding: 5px 10px;
-            background: rgba(255, 149, 0, 0.1);
-            border-radius: 5px;
-            border: 1px solid rgba(255, 149, 0, 0.3);
-        }
+        /* Removed audio-status text notification styles */
         
         .live-dot {
             width: 8px;
@@ -224,7 +217,7 @@
             .video-controls {
                 padding: 12px 20px;
                 gap: 12px;
-                bottom: 20px;
+                bottom: 56px;
                 border-radius: 20px;
                 opacity: 1 !important;
                 pointer-events: auto !important;
@@ -270,24 +263,13 @@
                 font-size: 12px;
                 gap: 6px;
             }
-            
-            .audio-status {
-                font-size: 10px;
-                padding: 4px 8px;
-                margin-top: 6px;
-            }
-            
-            .live-dot {
-                width: 6px;
-                height: 6px;
-            }
         }
         
         @media (max-width: 480px) {
             .video-controls {
                 padding: 10px 15px;
                 gap: 10px;
-                bottom: 15px;
+                bottom: 64px;
                 opacity: 1 !important;
                 pointer-events: auto !important;
             }
@@ -341,7 +323,7 @@
                     <span>CANLI</span>
                 </div>
                 <button id="tapToUnmute" style="display:none; margin-top:8px; padding:8px 12px; border-radius:6px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:12px;">🔊 Səsi aç</button>
-                <div class="audio-status" id="audioStatus" style="display: none;"></div>
+                <!-- removed audio-status text element -->
             </div>
             
             <!-- Video Controls -->
@@ -409,15 +391,11 @@
         
         function checkAudioStatus() {
             const video = document.getElementById('videoPlayer');
-            const audioStatus = document.getElementById('audioStatus');
             const tapBtn = document.getElementById('tapToUnmute');
             
             if (video.muted) {
-                audioStatus.textContent = '🔇 Səs üçün toxunun və ya "Səsi aç" düyməsinə basın';
-                audioStatus.style.display = 'block';
                 tapBtn.style.display = 'inline-block';
             } else {
-                audioStatus.style.display = 'none';
                 tapBtn.style.display = 'none';
             }
         }

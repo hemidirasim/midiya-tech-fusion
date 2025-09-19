@@ -61,6 +61,7 @@
             gap: 15px;
             backdrop-filter: blur(10px);
             transition: opacity 0.3s;
+            z-index: 1000;
         }
         
         .video-controls.hidden {
@@ -225,6 +226,8 @@
                 gap: 12px;
                 bottom: 20px;
                 border-radius: 20px;
+                opacity: 1 !important;
+                pointer-events: auto !important;
             }
             
             .control-btn {
@@ -285,6 +288,8 @@
                 padding: 10px 15px;
                 gap: 10px;
                 bottom: 15px;
+                opacity: 1 !important;
+                pointer-events: auto !important;
             }
             
             .control-btn {
@@ -330,14 +335,13 @@
             
             
             <!-- Status Indicator -->
-            <div class="status-bar">
+            <div class="status-bar" id="statusBar">
                 <div class="live-indicator" id="statusIndicator">
                     <div class="live-dot"></div>
                     <span>CANLI</span>
                 </div>
-                <div class="audio-status" id="audioStatus" style="display: none;">
-                    <span>🔇 Səs üçün səhifəyə toxunun</span>
-                </div>
+                <button id="tapToUnmute" style="display:none; margin-top:8px; padding:8px 12px; border-radius:6px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:12px;">🔊 Səsi aç</button>
+                <div class="audio-status" id="audioStatus" style="display: none;"></div>
             </div>
             
             <!-- Video Controls -->
@@ -406,11 +410,15 @@
         function checkAudioStatus() {
             const video = document.getElementById('videoPlayer');
             const audioStatus = document.getElementById('audioStatus');
+            const tapBtn = document.getElementById('tapToUnmute');
             
             if (video.muted) {
+                audioStatus.textContent = '🔇 Səs üçün toxunun və ya "Səsi aç" düyməsinə basın';
                 audioStatus.style.display = 'block';
+                tapBtn.style.display = 'inline-block';
             } else {
                 audioStatus.style.display = 'none';
+                tapBtn.style.display = 'none';
             }
         }
         
@@ -750,7 +758,7 @@
         
         function setupMouseActivity() {
             const controls = document.getElementById('videoControls');
-            const statusBar = document.querySelector('.status-bar');
+            const statusBar = document.getElementById('statusBar');
             const videoContainer = document.querySelector('.video-container');
             let mouseInactivityTimer;
             let statusBarTimer;
@@ -818,7 +826,12 @@
             // Global events
             document.addEventListener('mousemove', showControls);
             document.addEventListener('click', showControls);
-            document.addEventListener('click', enableAudio);
+            document.addEventListener('click', function() {
+                // Avoid unmuting when clicking within controls to prevent accidental toggles
+                const active = document.activeElement;
+                if (active && active.closest && active.closest('#videoControls')) return;
+                enableAudio();
+            });
             document.addEventListener('keydown', enableAudio);
             document.addEventListener('touchstart', enableAudio);
             
@@ -918,6 +931,7 @@
         
         function setupPlayButton() {
             const playBtn = document.getElementById('playPauseBtn');
+            const tapBtn = document.getElementById('tapToUnmute');
             
             if (playBtn) {
                 // Remove any existing event listeners
@@ -937,6 +951,23 @@
                     e.stopPropagation();
                     console.log('Play button touched');
                     togglePlayPause();
+                });
+            }
+
+            if (tapBtn) {
+                tapBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const video = document.getElementById('videoPlayer');
+                    video.muted = false;
+                    video.volume = lastVolume;
+                    checkAudioStatus();
+                });
+                tapBtn.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    const video = document.getElementById('videoPlayer');
+                    video.muted = false;
+                    video.volume = lastVolume;
+                    checkAudioStatus();
                 });
             }
         }

@@ -1,5 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import Hero from "@/components/sections/Hero";
 import Services from "@/components/sections/Services";
 import Clients from "@/components/sections/Clients";
@@ -169,6 +171,11 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <SEOHead />
       <Navbar />
+      <div className="container mx-auto mt-4 flex justify-end">
+        <Button asChild size="sm" variant="outline">
+          <Link to="/login">Client Panel</Link>
+        </Button>
+      </div>
       <main>
         <Hero />
         <Services />

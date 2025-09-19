@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>DVR Player - Simplified</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .main-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Video Player Area */
+        .video-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        
+        #videoPlayer {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+        
+        /* Video Controls Overlay */
+        .video-controls {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+            transition: opacity 0.3s;
+        }
+        
+        .video-controls.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-btn.active {
+            background: #ff3b30;
+        }
+        
+        #fullscreenBtn {
+            font-size: 16px;
+            min-width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        #fullscreenBtn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .volume-control .control-btn {
+            min-width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .volume-control .control-btn.muted {
+            background: rgba(255, 59, 48, 0.2);
+            color: #ff3b30;
+        }
+        
+        .volume-slider {
+            width: 60px;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .play-pause-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Status Indicators */
+        .status-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            transition: opacity 0.3s ease;
+        }
+        
+        .status-bar.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        /* Hide status bar in fullscreen */
+        .video-container:fullscreen .status-bar,
+        .video-container:-webkit-full-screen .status-bar,
+        .video-container:-moz-full-screen .status-bar,
+        .video-container:-ms-fullscreen .status-bar {
+            display: none;
+        }
+        
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .audio-status {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #ff9500;
+            text-align: center;
+            padding: 5px 10px;
+            background: rgba(255, 149, 0, 0.1);
+            border-radius: 5px;
+            border: 1px solid rgba(255, 149, 0, 0.3);
+        }
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #ff3b30;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+        
+        .archive-indicator {
+            color: #ff9500;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .video-controls {
+                padding: 12px 20px;
+                gap: 12px;
+                bottom: 20px;
+                border-radius: 20px;
+            }
+            
+            .control-btn {
+                padding: 8px 10px;
+                font-size: 14px;
+                min-width: 36px;
+                height: 36px;
+            }
+            
+            .play-pause-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
+            }
+            
+            .volume-slider {
+                width: 50px;
+                height: 6px;
+            }
+            
+            .volume-control .control-btn {
+                min-width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+            
+            #fullscreenBtn {
+                min-width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+            
+            .status-bar {
+                top: 15px;
+                right: 15px;
+                padding: 8px 12px;
+            }
+            
+            .live-indicator {
+                font-size: 12px;
+                gap: 6px;
+            }
+            
+            .audio-status {
+                font-size: 10px;
+                padding: 4px 8px;
+                margin-top: 6px;
+            }
+            
+            .live-dot {
+                width: 6px;
+                height: 6px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .video-controls {
+                padding: 10px 15px;
+                gap: 10px;
+                bottom: 15px;
+            }
+            
+            .control-btn {
+                padding: 6px 8px;
+                font-size: 12px;
+                min-width: 32px;
+                height: 32px;
+            }
+            
+            .play-pause-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+            
+            .volume-slider {
+                width: 40px;
+            }
+            
+            .volume-control .control-btn {
+                min-width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+            
+            #fullscreenBtn {
+                min-width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/flv.js@latest/dist/flv.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Video Player -->
+        <div class="video-container">
+            <video id="videoPlayer" preload="auto" playsinline webkit-playsinline>
+                Brauzeriniz bu video formatını dəstəkləmir.
+            </video>
+            
+            
+            <!-- Status Indicator -->
+            <div class="status-bar">
+                <div class="live-indicator" id="statusIndicator">
+                    <div class="live-dot"></div>
+                    <span>CANLI</span>
+                </div>
+                <div class="audio-status" id="audioStatus" style="display: none;">
+                    <span>🔇 Səs üçün səhifəyə toxunun</span>
+                </div>
+            </div>
+            
+            <!-- Video Controls -->
+            <div class="video-controls" id="videoControls">
+                <button class="play-pause-btn" onclick="togglePlayPause()" id="playPauseBtn">▶️</button>
+                <div class="volume-control">
+                    <button class="control-btn" onclick="toggleMute()" id="muteBtn">🔊</button>
+                    <input type="range" class="volume-slider" min="0" max="100" value="80" onchange="setVolume(this.value)" id="volumeSlider">
+                </div>
+                <button class="control-btn" onclick="toggleFullscreen()" id="fullscreenBtn" title="Tam ekran">⛶</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let flvPlayer = null;
+        let hlsPlayer = null;
+        let lastVolume = 0.8; // Store last volume before muting
+        
+        // Initialize audio settings
+        function initializeAudio() {
+            const video = document.getElementById('videoPlayer');
+            const volumeSlider = document.getElementById('volumeSlider');
+            
+            // Detect Safari for special handling
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            
+            // Set initial volume
+            video.volume = lastVolume;
+            if (volumeSlider) {
+                volumeSlider.value = lastVolume * 100;
+            }
+            
+            // For Safari, start muted to avoid autoplay issues
+            if (isSafari) {
+                video.muted = true;
+            } else {
+                video.muted = false;
+            }
+            
+            // Add event listener for volume changes
+            video.addEventListener('volumechange', function() {
+                if (!video.muted && volumeSlider) {
+                    lastVolume = video.volume;
+                    volumeSlider.value = video.volume * 100;
+                }
+            });
+            
+            // Add event listeners for play/pause state
+            video.addEventListener('play', function() {
+                document.getElementById('playPauseBtn').textContent = '⏸';
+            });
+            
+            video.addEventListener('pause', function() {
+                document.getElementById('playPauseBtn').textContent = '▶️';
+            });
+            
+            video.addEventListener('ended', function() {
+                document.getElementById('playPauseBtn').textContent = '▶️';
+            });
+            
+            // Check if audio is muted and show status
+            checkAudioStatus();
+        }
+        
+        function checkAudioStatus() {
+            const video = document.getElementById('videoPlayer');
+            const audioStatus = document.getElementById('audioStatus');
+            
+            if (video.muted) {
+                audioStatus.style.display = 'block';
+            } else {
+                audioStatus.style.display = 'none';
+            }
+        }
+        
+        // Initialize the system
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize audio settings
+            initializeAudio();
+            
+            // Initialize live stream
+            console.log('Initializing live stream...');
+            initializeLiveStream();
+            
+            // Hide controls on mouse inactivity
+            setupMouseActivity();
+            
+            // Setup fullscreen event listeners
+            setupFullscreenEvents();
+            
+            // Try to enable autoplay on user interaction
+            enableAutoplayOnInteraction();
+            
+            // Setup play button event listener
+            setupPlayButton();
+        });
+        
+        function enableAutoplayOnInteraction() {
+            const video = document.getElementById('videoPlayer');
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            
+            function tryAutoplay() {
+                // Don't auto-play in Safari, let user manually control
+                if (isSafari) {
+                    console.log('Safari detected - skipping autoplay on interaction');
+                    return;
+                }
+                
+                if (video.paused) {
+                    video.play().then(() => {
+                        console.log('Autoplay enabled after user interaction');
+                        document.getElementById('playPauseBtn').textContent = '⏸';
+                        // Unmute after successful play
+                        setTimeout(() => {
+                            video.muted = false;
+                            checkAudioStatus();
+                        }, 500);
+                    }).catch(err => {
+                        console.log('Autoplay still blocked:', err);
+                    });
+                }
+            }
+            
+            // Only enable for non-Safari browsers
+            if (!isSafari) {
+                document.addEventListener('click', tryAutoplay, { once: true });
+                document.addEventListener('keydown', tryAutoplay, { once: true });
+                document.addEventListener('touchstart', tryAutoplay, { once: true });
+            }
+        }
+        
+        function initializeLiveStream() {
+            const videoElement = document.getElementById('videoPlayer');
+            
+            // Add error handling for video element
+            videoElement.addEventListener('error', function(e) {
+                console.error('Video element error:', e);
+                console.error('Error details:', videoElement.error);
+                showToast('Video yüklənmədi. Brauzerinizi yeniləyin və yenidən cəhd edin.');
+            });
+            
+            // Add load start event
+            videoElement.addEventListener('loadstart', function() {
+                console.log('Video loading started');
+            });
+            
+            // Add can play event
+            videoElement.addEventListener('canplay', function() {
+                console.log('Video can start playing');
+            });
+            
+            // Direct stream URLs
+            const hlsUrl = 'https://customer-xe0l1qtroxu1onlw.cloudflarestream.com/f45cb4ab88a369702d2c3a249f10a2de/manifest/video.m3u8';
+            const flvUrl = 'https://medeniyyet.2meet.az/live/livestream.flv'; // Fallback URL
+            
+            // Detect Safari
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            
+            // For Safari, use native HLS support first
+            if (isSafari && videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+                console.log('Safari detected - Using native HLS support');
+                videoElement.src = hlsUrl;
+                
+                // Safari specific event handling
+                videoElement.addEventListener('loadedmetadata', function() {
+                    console.log('Safari: Video metadata loaded');
+                });
+                
+                videoElement.addEventListener('canplaythrough', function() {
+                    console.log('Safari: Video can play through');
+                    // Don't auto-play in Safari, wait for user interaction
+                    document.getElementById('playPauseBtn').textContent = '▶️';
+                    showToast('Video başlatmaq üçün play düyməsini basın');
+                });
+                
+                // Don't attempt autoplay in Safari
+                return;
+                
+            } else if (Hls && Hls.isSupported()) {
+                console.log('Using HLS.js for streaming');
+                hlsPlayer = new Hls({
+                    enableWorker: false, // Disable for Safari compatibility
+                    lowLatencyMode: false, // Disable for better compatibility
+                    backBufferLength: 30,
+                    maxBufferLength: 60,
+                    maxMaxBufferLength: 120,
+                    maxBufferSize: 60 * 1000 * 1000,
+                    maxBufferHole: 0.5,
+                    highBufferWatchdogPeriod: 2,
+                    nudgeOffset: 0.1,
+                    nudgeMaxRetry: 3, // Reduce retries
+                    maxFragLookUpTolerance: 0.25,
+                    liveSyncDurationCount: 3,
+                    liveMaxLatencyDurationCount: 10,
+                    liveDurationInfinity: true,
+                    progressive: false, // Disable progressive for live streams
+                    enableSoftwareAES: true,
+                    debug: false
+                });
+                
+                hlsPlayer.loadSource(hlsUrl);
+                hlsPlayer.attachMedia(videoElement);
+                
+                hlsPlayer.on(Hls.Events.MANIFEST_PARSED, function() {
+                    console.log('HLS manifest parsed');
+                    // Don't auto-play, wait for user interaction
+                    document.getElementById('playPauseBtn').textContent = '▶️';
+                    showToast('Video başlatmaq üçün play düyməsini basın');
+                });
+                
+                hlsPlayer.on(Hls.Events.ERROR, function(event, data) {
+                    console.error('HLS Error:', data);
+                    if (data.fatal) {
+                        console.log('HLS failed, trying FLV...');
+                        tryFLVPlayer(flvUrl);
+                    }
+                });
+                
+            } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+                // Fallback native HLS support
+                console.log('Using fallback native HLS support');
+                videoElement.src = hlsUrl;
+                document.getElementById('playPauseBtn').textContent = '▶️';
+                showToast('Video başlatmaq üçün play düyməsini basın');
+                
+            } else if (typeof flvjs !== 'undefined' && flvjs.isSupported()) {
+                // Try FLV as fallback
+                console.log('HLS not supported, trying FLV...');
+                tryFLVPlayer(flvUrl);
+                
+            } else {
+                // Last resort - try direct video source
+                console.log('No suitable player found, trying direct playback');
+                videoElement.src = flvUrl;
+                document.getElementById('playPauseBtn').textContent = '▶️';
+                showToast('Video başlatmaq üçün play düyməsini basın');
+            }
+        }
+        
+        function tryFLVPlayer(url) {
+            if (typeof flvjs === 'undefined' || !flvjs.isSupported()) {
+                showToast('FLV oynadıcı dəstəklənmir');
+                return;
+            }
+            
+            const videoElement = document.getElementById('videoPlayer');
+            
+            try {
+                flvPlayer = flvjs.createPlayer({
+                    type: 'flv',
+                    url: url,
+                    isLive: true,
+                    hasAudio: true,
+                    hasVideo: true
+                }, {
+                    enableWorker: false,
+                    enableStashBuffer: true,
+                    stashInitialSize: 128,
+                    lazyLoad: false,
+                    lazyLoadMaxDuration: 3 * 60,
+                    lazyLoadRecoverDuration: 30,
+                    deferLoadAfterSourceOpen: false,
+                    autoCleanupSourceBuffer: true,
+                    autoCleanupMaxBackwardDuration: 30,
+                    autoCleanupMinBackwardDuration: 10,
+                    statisticsInfoReportInterval: 600,
+                    fixAudioTimestampGap: true,
+                    flushingTime: 2
+                });
+                
+                flvPlayer.attachMediaElement(videoElement);
+                flvPlayer.load();
+                
+                // Auto play after load
+                flvPlayer.on(flvjs.Events.MEDIA_INFO, (info) => {
+                    console.log('FLV Media Info:', info);
+                    // Keep muted initially for autoplay compatibility
+                    videoElement.muted = true;
+                    videoElement.volume = 0.8;
+                    
+                    // Auto play the stream
+                    console.log('FLV stream ready - starting playback');
+                    videoElement.play().then(() => {
+                        console.log('FLV stream started successfully');
+                        document.getElementById('playPauseBtn').textContent = '⏸';
+                        // Unmute after successful play
+                        setTimeout(() => {
+                            videoElement.muted = false;
+                            checkAudioStatus();
+                        }, 1000);
+                    }).catch(err => {
+                        console.log('FLV autoplay failed, user interaction required:', err);
+                        showToast('Video başlatmaq üçün play düyməsini basın');
+                    });
+                });
+                
+                // Handle errors
+                flvPlayer.on(flvjs.Events.ERROR, (errorType, errorDetail, errorInfo) => {
+                    console.error('FLV Player Error:', errorType, errorDetail, errorInfo);
+                    
+                    if (errorType === flvjs.ErrorTypes.NETWORK_ERROR) {
+                        showToast('Şəbəkə xətası. İnternet bağlantınızı yoxlayın.');
+                    } else if (errorType === flvjs.ErrorTypes.MEDIA_ERROR) {
+                        showToast('Video format xətası.');
+                    } else {
+                        showToast('Video yüklənmədi.');
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Failed to create FLV player:', error);
+                showToast('Video oynadıcı yaradıla bilmədi.');
+            }
+        }
+        
+        function togglePlayPause() {
+            const video = document.getElementById('videoPlayer');
+            const btn = document.getElementById('playPauseBtn');
+            
+            console.log('Toggle play/pause clicked');
+            console.log('Video paused state:', video.paused);
+            
+            if (video.paused) {
+                // Start playing
+                console.log('Attempting to play video...');
+                
+                // For Safari, ensure proper setup before playing
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                if (isSafari) {
+                    // Set volume and muted state for Safari
+                    video.volume = 0.8;
+                    video.muted = false;
+                }
+                
+                video.play().then(() => {
+                    btn.textContent = '⏸';
+                    console.log('Video started playing successfully');
+                    // Update audio status
+                    checkAudioStatus();
+                }).catch(err => {
+                    console.error('Failed to play video:', err);
+                    
+                    // Safari-specific error handling
+                    if (isSafari) {
+                        // Try with muted first for Safari
+                        video.muted = true;
+                        video.play().then(() => {
+                            btn.textContent = '⏸';
+                            console.log('Video started playing muted in Safari');
+                            checkAudioStatus();
+                            showToast('Video başladı. Səs üçün səs düyməsini basın.');
+                        }).catch(err2 => {
+                            console.error('Safari: Failed to play video even muted:', err2);
+                            showToast('Video başladıla bilmədi. Səhifəni yeniləyin və yenidən cəhd edin.');
+                        });
+                    } else {
+                        showToast('Video başladıla bilmədi. Yenidən cəhd edin.');
+                    }
+                });
+            } else {
+                // Pause video
+                video.pause();
+                btn.textContent = '▶️';
+                console.log('Video paused');
+            }
+        }
+        
+        function setVolume(value) {
+            const video = document.getElementById('videoPlayer');
+            video.volume = value / 100;
+            lastVolume = video.volume; // Update lastVolume
+            
+            // Update mute button state
+            const muteBtn = document.getElementById('muteBtn');
+            if (value > 0) {
+                video.muted = false;
+                muteBtn.textContent = '🔊';
+                muteBtn.classList.remove('muted');
+            } else {
+                video.muted = true;
+                muteBtn.textContent = '🔇';
+                muteBtn.classList.add('muted');
+            }
+            
+            checkAudioStatus();
+        }
+        
+        function toggleMute() {
+            const video = document.getElementById('videoPlayer');
+            const muteBtn = document.getElementById('muteBtn');
+            const volumeSlider = document.getElementById('volumeSlider');
+            
+            if (video.muted) {
+                video.muted = false;
+                muteBtn.textContent = '🔊';
+                muteBtn.classList.remove('muted');
+                // Restore last volume
+                video.volume = lastVolume;
+                volumeSlider.value = lastVolume * 100;
+            } else {
+                lastVolume = video.volume;
+                video.muted = true;
+                muteBtn.textContent = '🔇';
+                muteBtn.classList.add('muted');
+            }
+            
+            checkAudioStatus();
+        }
+        
+        function setupMouseActivity() {
+            const controls = document.getElementById('videoControls');
+            const statusBar = document.querySelector('.status-bar');
+            const videoContainer = document.querySelector('.video-container');
+            let mouseInactivityTimer;
+            let statusBarTimer;
+            let touchStartTime = 0;
+            
+            function showControls() {
+                controls.classList.remove('hidden');
+                if (statusBar) {
+                    statusBar.classList.remove('hidden');
+                }
+                clearTimeout(mouseInactivityTimer);
+                clearTimeout(statusBarTimer);
+                mouseInactivityTimer = setTimeout(() => {
+                    controls.classList.add('hidden');
+                }, 5000); // 5 seconds for controls
+                statusBarTimer = setTimeout(() => {
+                    if (statusBar) {
+                        statusBar.classList.add('hidden');
+                    }
+                }, 6000); // 6 seconds for status bar
+            }
+            
+            function enableAudio() {
+                const video = document.getElementById('videoPlayer');
+                if (video.muted) {
+                    video.muted = false;
+                    video.volume = lastVolume;
+                    const volumeSlider = document.getElementById('volumeSlider');
+                    if (volumeSlider) {
+                        volumeSlider.value = lastVolume * 100;
+                    }
+                    const muteBtn = document.getElementById('muteBtn');
+                    muteBtn.textContent = '🔊';
+                    muteBtn.classList.remove('muted');
+                    checkAudioStatus();
+                }
+            }
+            
+            // Video container click/touch events
+            videoContainer.addEventListener('click', function(e) {
+                // Only toggle if clicking on video itself, not on controls
+                if (e.target.id === 'videoPlayer') {
+                    togglePlayPause();
+                }
+                showControls();
+                enableAudio();
+            });
+            
+            // Touch events for mobile
+            videoContainer.addEventListener('touchstart', function(e) {
+                touchStartTime = Date.now();
+                showControls();
+                enableAudio();
+            });
+            
+            videoContainer.addEventListener('touchend', function(e) {
+                const touchDuration = Date.now() - touchStartTime;
+                // If it's a quick tap (not a long press), toggle play/pause
+                if (touchDuration < 300 && e.target.id === 'videoPlayer') {
+                    e.preventDefault();
+                    togglePlayPause();
+                }
+            });
+            
+            // Global events
+            document.addEventListener('mousemove', showControls);
+            document.addEventListener('click', showControls);
+            document.addEventListener('click', enableAudio);
+            document.addEventListener('keydown', enableAudio);
+            document.addEventListener('touchstart', enableAudio);
+            
+            showControls(); // Show initially
+        }
+        
+        function showToast(message) {
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0,0,0,0.9);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 25px;
+                font-size: 14px;
+                z-index: 1000;
+                backdrop-filter: blur(10px);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 3000);
+        }
+        
+        function toggleFullscreen() {
+            const videoContainer = document.querySelector('.video-container');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            
+            if (!document.fullscreenElement) {
+                // Enter fullscreen
+                if (videoContainer.requestFullscreen) {
+                    videoContainer.requestFullscreen();
+                } else if (videoContainer.webkitRequestFullscreen) {
+                    videoContainer.webkitRequestFullscreen();
+                } else if (videoContainer.msRequestFullscreen) {
+                    videoContainer.msRequestFullscreen();
+                }
+                fullscreenBtn.textContent = '⛶';
+                fullscreenBtn.title = 'Tam ekrandan çıx';
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                fullscreenBtn.textContent = '⛶';
+                fullscreenBtn.title = 'Tam ekran';
+            }
+        }
+        
+        function setupFullscreenEvents() {
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            
+            // Listen for fullscreen changes
+            document.addEventListener('fullscreenchange', updateFullscreenButton);
+            document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+            document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+            document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+            
+            // Listen for ESC key to exit fullscreen
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.fullscreenElement) {
+                    updateFullscreenButton();
+                }
+            });
+        }
+        
+        function updateFullscreenButton() {
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const statusBar = document.querySelector('.status-bar');
+            
+            if (document.fullscreenElement) {
+                fullscreenBtn.textContent = '⛶';
+                fullscreenBtn.title = 'Tam ekrandan çıx';
+                // Hide status bar in fullscreen
+                if (statusBar) {
+                    statusBar.classList.add('hidden');
+                }
+            } else {
+                fullscreenBtn.textContent = '⛶';
+                fullscreenBtn.title = 'Tam ekran';
+                // Show status bar when exiting fullscreen
+                if (statusBar) {
+                    statusBar.classList.remove('hidden');
+                }
+            }
+        }
+        
+        function setupPlayButton() {
+            const playBtn = document.getElementById('playPauseBtn');
+            
+            if (playBtn) {
+                // Remove any existing event listeners
+                playBtn.onclick = null;
+                
+                // Add new event listener
+                playBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Play button clicked');
+                    togglePlayPause();
+                });
+                
+                // Also add touch event for mobile
+                playBtn.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Play button touched');
+                    togglePlayPause();
+                });
+            }
+        }
+    </script>
+</body>
+</html>

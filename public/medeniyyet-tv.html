@@ -56,7 +56,7 @@
             background: rgba(0, 0, 0, 0.8);
             padding: 15px 25px;
             border-radius: 25px;
-            display: flex;
+            display: none; /* hide custom overlay controls */
             align-items: center;
             gap: 15px;
             backdrop-filter: blur(10px);
@@ -311,7 +311,7 @@
     <div class="main-container">
         <!-- Video Player -->
         <div class="video-container">
-            <video id="videoPlayer" preload="auto" playsinline webkit-playsinline>
+            <video id="videoPlayer" preload="auto" playsinline webkit-playsinline controls>
                 Brauzeriniz bu video formatını dəstəkləmir.
             </video>
             
@@ -326,15 +326,7 @@
                 <!-- removed audio-status text element -->
             </div>
             
-            <!-- Video Controls -->
-            <div class="video-controls" id="videoControls">
-                <button class="play-pause-btn" onclick="togglePlayPause()" id="playPauseBtn">▶️</button>
-                <div class="volume-control">
-                    <button class="control-btn" onclick="toggleMute()" id="muteBtn">🔊</button>
-                    <input type="range" class="volume-slider" min="0" max="100" value="80" onchange="setVolume(this.value)" id="volumeSlider">
-                </div>
-                <button class="control-btn" onclick="toggleFullscreen()" id="fullscreenBtn" title="Tam ekran">⛶</button>
-            </div>
+            <!-- Custom overlay controls removed; using native controls -->
         </div>
     </div>
 
@@ -347,45 +339,19 @@
         // Initialize audio settings
         function initializeAudio() {
             const video = document.getElementById('videoPlayer');
-            const volumeSlider = document.getElementById('volumeSlider');
-            
             // Detect Safari for special handling
             const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-            
             // Set initial volume
             video.volume = lastVolume;
-            if (volumeSlider) {
-                volumeSlider.value = lastVolume * 100;
-            }
-            
             // For Safari, start muted to avoid autoplay issues
-            if (isSafari) {
-                video.muted = true;
-            } else {
-                video.muted = false;
-            }
-            
-            // Add event listener for volume changes
+            video.muted = isSafari ? true : false;
+            // Track last volume when user changes it via native controls
             video.addEventListener('volumechange', function() {
-                if (!video.muted && volumeSlider) {
+                if (!video.muted) {
                     lastVolume = video.volume;
-                    volumeSlider.value = video.volume * 100;
                 }
+                checkAudioStatus();
             });
-            
-            // Add event listeners for play/pause state
-            video.addEventListener('play', function() {
-                document.getElementById('playPauseBtn').textContent = '⏸';
-            });
-            
-            video.addEventListener('pause', function() {
-                document.getElementById('playPauseBtn').textContent = '▶️';
-            });
-            
-            video.addEventListener('ended', function() {
-                document.getElementById('playPauseBtn').textContent = '▶️';
-            });
-            
             // Check if audio is muted and show status
             checkAudioStatus();
         }
@@ -410,17 +376,14 @@
             console.log('Initializing live stream...');
             initializeLiveStream();
             
-            // Hide controls on mouse inactivity
-            setupMouseActivity();
+            // Custom overlay controls removed; no inactivity handlers needed
             
-            // Setup fullscreen event listeners
-            setupFullscreenEvents();
+            // Fullscreen button removed; rely on native controls
             
             // Try to enable autoplay on user interaction
             enableAutoplayOnInteraction();
             
-            // Setup play button event listener
-            setupPlayButton();
+            // Native controls handle play/pause
 
             // Track iOS Safari video fullscreen begin/end
             const videoEl = document.getElementById('videoPlayer');
@@ -450,7 +413,6 @@
                 if (video.paused) {
                     video.play().then(() => {
                         console.log('Autoplay enabled after user interaction');
-                        document.getElementById('playPauseBtn').textContent = '⏸';
                         // Unmute after successful play
                         setTimeout(() => {
                             video.muted = false;
@@ -510,7 +472,6 @@
                 videoElement.addEventListener('canplaythrough', function() {
                     console.log('Safari: Video can play through');
                     // Don't auto-play in Safari, wait for user interaction
-                    document.getElementById('playPauseBtn').textContent = '▶️';
                     showToast('Video başlatmaq üçün play düyməsini basın');
                 });
                 
@@ -545,7 +506,6 @@
                 hlsPlayer.on(Hls.Events.MANIFEST_PARSED, function() {
                     console.log('HLS manifest parsed');
                     // Don't auto-play, wait for user interaction
-                    document.getElementById('playPauseBtn').textContent = '▶️';
                     showToast('Video başlatmaq üçün play düyməsini basın');
                 });
                 
@@ -561,7 +521,6 @@
                 // Fallback native HLS support
                 console.log('Using fallback native HLS support');
                 videoElement.src = hlsUrl;
-                document.getElementById('playPauseBtn').textContent = '▶️';
                 showToast('Video başlatmaq üçün play düyməsini basın');
                 
             } else if (typeof flvjs !== 'undefined' && flvjs.isSupported()) {
@@ -573,7 +532,6 @@
                 // Last resort - try direct video source
                 console.log('No suitable player found, trying direct playback');
                 videoElement.src = flvUrl;
-                document.getElementById('playPauseBtn').textContent = '▶️';
                 showToast('Video başlatmaq üçün play düyməsini basın');
             }
         }
@@ -654,99 +612,11 @@
             }
         }
         
-        function togglePlayPause() {
-            const video = document.getElementById('videoPlayer');
-            const btn = document.getElementById('playPauseBtn');
-            
-            console.log('Toggle play/pause clicked');
-            console.log('Video paused state:', video.paused);
-            
-            if (video.paused) {
-                // Start playing
-                console.log('Attempting to play video...');
-                
-                // For Safari, ensure proper setup before playing
-                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-                if (isSafari) {
-                    // Set volume and muted state for Safari
-                    video.volume = 0.8;
-                    video.muted = false;
-                }
-                
-                video.play().then(() => {
-                    btn.textContent = '⏸';
-                    console.log('Video started playing successfully');
-                    // Update audio status
-                    checkAudioStatus();
-                }).catch(err => {
-                    console.error('Failed to play video:', err);
-                    
-                    // Safari-specific error handling
-                    if (isSafari) {
-                        // Try with muted first for Safari
-                        video.muted = true;
-                        video.play().then(() => {
-                            btn.textContent = '⏸';
-                            console.log('Video started playing muted in Safari');
-                            checkAudioStatus();
-                            showToast('Video başladı. Səs üçün səs düyməsini basın.');
-                        }).catch(err2 => {
-                            console.error('Safari: Failed to play video even muted:', err2);
-                            showToast('Video başladıla bilmədi. Səhifəni yeniləyin və yenidən cəhd edin.');
-                        });
-                    } else {
-                        showToast('Video başladıla bilmədi. Yenidən cəhd edin.');
-                    }
-                });
-            } else {
-                // Pause video
-                video.pause();
-                btn.textContent = '▶️';
-                console.log('Video paused');
-            }
-        }
+        // Native controls handle play/pause
         
-        function setVolume(value) {
-            const video = document.getElementById('videoPlayer');
-            video.volume = value / 100;
-            lastVolume = video.volume; // Update lastVolume
-            
-            // Update mute button state
-            const muteBtn = document.getElementById('muteBtn');
-            if (value > 0) {
-                video.muted = false;
-                muteBtn.textContent = '🔊';
-                muteBtn.classList.remove('muted');
-            } else {
-                video.muted = true;
-                muteBtn.textContent = '🔇';
-                muteBtn.classList.add('muted');
-            }
-            
-            checkAudioStatus();
-        }
+        // Native controls handle volume
         
-        function toggleMute() {
-            const video = document.getElementById('videoPlayer');
-            const muteBtn = document.getElementById('muteBtn');
-            const volumeSlider = document.getElementById('volumeSlider');
-            
-            if (video.muted) {
-                video.muted = false;
-                muteBtn.textContent = '🔊';
-                muteBtn.classList.remove('muted');
-                // Restore last volume
-                video.volume = lastVolume;
-                volumeSlider.value = lastVolume * 100;
-            } else {
-                lastVolume = video.volume;
-                video.muted = true;
-                muteBtn.textContent = '🔇';
-                muteBtn.classList.add('muted');
-            }
-            
-            checkAudioStatus();
-        }
+        // Native controls handle mute
         
         function setupMouseActivity() {
             const controls = document.getElementById('videoControls');
@@ -898,69 +768,12 @@
             }
         }
         
-        function setupFullscreenEvents() {
-            const fullscreenBtn = document.getElementById('fullscreenBtn');
-            
-            // Listen for fullscreen changes
-            document.addEventListener('fullscreenchange', updateFullscreenButton);
-            document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
-            document.addEventListener('mozfullscreenchange', updateFullscreenButton);
-            document.addEventListener('MSFullscreenChange', updateFullscreenButton);
-            
-            // Listen for ESC key to exit fullscreen
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && document.fullscreenElement) {
-                    updateFullscreenButton();
-                }
-            });
-        }
+        // Rely on native fullscreen UI
         
-        function updateFullscreenButton() {
-            const fullscreenBtn = document.getElementById('fullscreenBtn');
-            const statusBar = document.querySelector('.status-bar');
-            
-            if (document.fullscreenElement || isWebkitVideoFullscreen) {
-                fullscreenBtn.textContent = '⛶';
-                fullscreenBtn.title = 'Tam ekrandan çıx';
-                // Hide status bar in fullscreen
-                if (statusBar) {
-                    statusBar.classList.add('hidden');
-                }
-            } else {
-                fullscreenBtn.textContent = '⛶';
-                fullscreenBtn.title = 'Tam ekran';
-                // Show status bar when exiting fullscreen
-                if (statusBar) {
-                    statusBar.classList.remove('hidden');
-                }
-            }
-        }
+        function updateFullscreenButton() {}
         
         function setupPlayButton() {
-            const playBtn = document.getElementById('playPauseBtn');
             const tapBtn = document.getElementById('tapToUnmute');
-            
-            if (playBtn) {
-                // Remove any existing event listeners
-                playBtn.onclick = null;
-                
-                // Add new event listener
-                playBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Play button clicked');
-                    togglePlayPause();
-                });
-                
-                // Also add touch event for mobile
-                playBtn.addEventListener('touchend', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Play button touched');
-                    togglePlayPause();
-                });
-            }
-
             if (tapBtn) {
                 tapBtn.addEventListener('click', function(e) {
                     e.preventDefault();
